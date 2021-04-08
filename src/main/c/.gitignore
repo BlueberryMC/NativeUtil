@@ -1,0 +1,6 @@
+jni.h
+jni_md.h
+jvmti.h
+.idea/
+.vs/
+x64/
