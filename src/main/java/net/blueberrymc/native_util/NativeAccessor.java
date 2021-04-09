@@ -9,4 +9,5 @@ public class NativeAccessor {
 
     public static native void appendToBootstrapClassLoaderSearch(@NotNull String url);
     public static native void appendToSystemClassLoaderSearch(@NotNull String url);
+    public static native <T> T allocateInstance(@NotNull Class<T> clazz);
 }

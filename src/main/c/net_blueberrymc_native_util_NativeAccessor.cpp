@@ -26,3 +26,8 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_appendTo
     GetJvmti(GetVM(env))->AddToSystemClassLoaderSearch(chars);
     env->ReleaseStringUTFChars(url, chars);
 }
+
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_allocateInstance
+        (JNIEnv *env, jclass clazz0, jclass clazz) {
+    return env->AllocObject(clazz);
+}
