@@ -83,25 +83,6 @@ public class NativeUtilTest {
         assert size == 16L : size;
     }
 
-    @Test
-    public void testClassLoadHook() {
-        AtomicBoolean hasLoaded = new AtomicBoolean();
-        NativeUtil.registerClassLoadHook((loader, className, classBeingRedefined, protectionDomain, buf) -> {
-            System.out.println("Loading class " + className);
-            if (className.equals("net/blueberrymc/native_util/TestClass")) {
-                hasLoaded.set(true);
-            }
-            return null;
-        });
-        new TestClass();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        assert hasLoaded.get() : "net/blueberrymc/native_util/TestClass was not loaded";
-    }
-
     private static class A {
         @SuppressWarnings("unused")
         public int getSomething() {

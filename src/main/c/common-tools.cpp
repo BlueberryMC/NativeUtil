@@ -8,6 +8,7 @@ extern "C" {
 static jclass ClassAssertionError;
 static jclass ClassClass;
 static jclass ClassMethod;
+static jclass ClassThread;
 static jclass ClassIllegalArgumentException;
 static jclass ClassNoSuchElementException;
 static jclass ClassBoolean;
@@ -34,6 +35,21 @@ static jvmtiEnv * GetJvmti(JavaVM *jvm) {
 
 static std::list<jobject> classLoadHooks; // NOLINT(cert-err58-cpp)
 
+static jthread GetCurrentThread(JNIEnv *env) {
+    jmethodID mid = env->GetStaticMethodID(ClassThread, "currentThread", "()Ljava/lang/Thread;");
+    return env->CallStaticObjectMethod(ClassThread, mid);
+}
+
+static bool EnsureStackDoesNotContain(jvmtiEnv *jvmti, JNIEnv *env, jmethodID mid) {
+    jvmtiFrameInfo frames[25];
+    jint count;
+    jvmti->GetStackTrace(GetCurrentThread(env), 0, 25, frames, &count);
+    for (int i = 0; i < count; ++i) {
+        if (frames[i].method == mid) return false;
+    }
+    return true;
+}
+
 static void classLoadHook(jvmtiEnv *jvmti_env,
                           JNIEnv* jni_env,
                           jclass class_being_redefined,
@@ -44,14 +60,18 @@ static void classLoadHook(jvmtiEnv *jvmti_env,
                           const unsigned char* class_data,
                           jint* new_class_data_len,
                           unsigned char** new_class_data) {
+    if (name == nullptr) return;
     jmethodID mid = jni_env->GetMethodID(ClassClassLoadHook, "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
     jbyteArray arr = jni_env->NewByteArray(class_data_len);
     jni_env->SetByteArrayRegion(arr, 0, class_data_len, (jbyte*) class_data);
     jstring j_name = jni_env->NewStringUTF(name);
     for (const jobject &item : classLoadHooks) {
-        jobject obj = jni_env->CallObjectMethod(item, mid, loader, j_name, class_being_redefined, protection_domain, arr);
-        if (obj != nullptr) {
-            arr = reinterpret_cast<jbyteArray>(obj);
+        jmethodID mid2 = jni_env->GetMethodID(jni_env->GetObjectClass(item), "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
+        if (EnsureStackDoesNotContain(jvmti_env, jni_env, mid2)) {
+            jobject obj = jni_env->CallObjectMethod(item, mid, loader, j_name, class_being_redefined, protection_domain, arr);
+            if (obj != nullptr) {
+                arr = reinterpret_cast<jbyteArray>(obj);
+            }
         }
     }
     *new_class_data_len = jni_env->GetArrayLength(arr);
@@ -64,6 +84,7 @@ static void InitTools(JNIEnv *env) {
     ClassAssertionError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/AssertionError")));
     ClassClass = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Class")));
     ClassMethod = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/reflect/Method")));
+    ClassThread = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Thread")));
     ClassIllegalArgumentException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/IllegalArgumentException")));
     ClassNoSuchElementException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/NoSuchElementException")));
     ClassBoolean = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Boolean")));
