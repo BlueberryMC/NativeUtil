@@ -20,14 +20,18 @@ static jclass ClassInteger;
 static jclass ClassLong;
 static jclass ClassShort;
 static jclass ClassClassLoadHook;
+static JavaVM * _javaVM;
+static jvmtiEnv * _jvmti;
 
 static JavaVM * GetVM(JNIEnv *env) {
+    if (_javaVM != nullptr) return _javaVM;
     JavaVM *jvm;
     env->GetJavaVM(&jvm);
     return jvm;
 }
 
 static jvmtiEnv * GetJvmti(JavaVM *jvm) {
+    if (_jvmti != nullptr) return _jvmti;
     void *ptr;
     jvm->GetEnv(&ptr, JVMTI_VERSION_1_1);
     return (jvmtiEnv *) ptr;
@@ -80,6 +84,8 @@ static void classLoadHook(jvmtiEnv *jvmti_env,
 }
 
 static void InitTools(JNIEnv *env) {
+    _javaVM = GetVM(env);
+    _jvmti = GetJvmti(_javaVM);
     classLoadHooks = std::list<jobject>();
     ClassAssertionError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/AssertionError")));
     ClassClass = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Class")));

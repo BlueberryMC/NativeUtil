@@ -6,7 +6,7 @@
 
     <groupId>net.blueberrymc</groupId>
     <artifactId>native-util</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
