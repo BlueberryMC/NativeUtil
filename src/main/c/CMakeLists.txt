@@ -1,0 +1,19 @@
+# Make sure to specify x64 toolchain
+
+cmake_minimum_required(VERSION 3.19)
+project(libnativeutil LANGUAGES CXX)
+set(JAVA_AWT_LIBRARY "")
+set(JAVA_AWT_INCLUDE_PATH "")
+find_package(JNI)
+
+include_directories(.)
+if (JNI_FOUND)
+    include_directories("${JNI_INCLUDE_DIRS}")
+else()
+    include_directories("$ENV{JAVA_HOME}/include;$ENV{JAVA_HOME}/include/win32;$ENV{JAVA_HOME}/include/linux")
+endif()
+
+add_library(libnativeutil SHARED
+        net_blueberrymc_native_util_NativeAccessor.cpp
+        net_blueberrymc_native_util_NativeAccessor.h
+        common-tools.cpp)

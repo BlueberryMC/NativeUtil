@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 
 public class NativeCode {
     private boolean loaded = false;
@@ -29,7 +30,14 @@ public class NativeCode {
             return true;
         } catch (Throwable ignore) {}
         try (InputStream soFile = NativeCode.class.getClassLoader().getResourceAsStream(fullName)) {
-            if (soFile == null) throw new RuntimeException(new FileNotFoundException("Could not find " + fullName + " in jar file"));
+            if (soFile == null) {
+                throw new RuntimeException(
+                        new FileNotFoundException(
+                                "Could not find " + fullName + " in jar file\n" +
+                                        "Full path: " + NativeCode.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()
+                        )
+                );
+            }
             File temp = File.createTempFile(name, suffix);
             temp.deleteOnExit();
             OutputStream os = new FileOutputStream(temp);
@@ -37,7 +45,7 @@ public class NativeCode {
             os.close();
             System.load(temp.getPath());
             loaded = true;
-        } catch (IOException ignore) {}
+        } catch (IOException | URISyntaxException ignore) {}
         return loaded;
     }
 
