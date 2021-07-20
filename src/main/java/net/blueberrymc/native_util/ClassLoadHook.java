@@ -9,6 +9,6 @@ public interface ClassLoadHook {
     byte@Nullable[] transform(@Nullable ClassLoader loader,
                               @NotNull String className,
                               @Nullable Class<?> classBeingRedefined,
-                              @NotNull ProtectionDomain protectionDomain,
+                              @Nullable ProtectionDomain protectionDomain,
                               byte[] buf);
 }
