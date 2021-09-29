@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.jar.JarFile;
 
 @SuppressWarnings("unused")
@@ -655,6 +656,31 @@ public class NativeUtil {
     }
 
     /**
+     * Find a method with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name method name
+     * @param signature method signature
+     * @return method but in optional
+     * @throws NoSuchElementException if field cannot be found
+     */
+    @Contract(pure = true)
+    @NotNull
+    public static Optional<Method> getMethodOptional(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
+        Objects.requireNonNull(clazz);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(signature);
+        try {
+            return Optional.of(NativeAccessor.getStaticMethod(clazz, name, signature));
+        } catch (NoSuchElementException ignore) {
+            try {
+                return Optional.of(NativeAccessor.getNonstaticMethod(clazz, name, signature));
+            } catch (NoSuchElementException ignore2) {
+                return Optional.empty();
+            }
+        }
+    }
+
+    /**
      * Find a static field with class and matching name + signature.
      * @param clazz class to find field at
      * @param name field name
@@ -706,6 +732,31 @@ public class NativeUtil {
             return NativeAccessor.getStaticField(clazz, name, signature);
         } catch (NoSuchElementException ignore) {
             return NativeAccessor.getNonstaticField(clazz, name, signature);
+        }
+    }
+
+    /**
+     * Find a field with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name field name
+     * @param signature field signature
+     * @return field but in optional
+     * @throws NoSuchElementException if field cannot be found
+     */
+    @Contract(pure = true)
+    @NotNull
+    public static Optional<Field> getFieldOptional(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
+        Objects.requireNonNull(clazz);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(signature);
+        try {
+            return Optional.of(NativeAccessor.getStaticField(clazz, name, signature));
+        } catch (NoSuchElementException ignore) {
+            try {
+                return Optional.of(NativeAccessor.getNonstaticField(clazz, name, signature));
+            } catch (NoSuchElementException ignore2) {
+                return Optional.empty();
+            }
         }
     }
 
