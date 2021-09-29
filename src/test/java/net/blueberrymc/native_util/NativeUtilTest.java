@@ -1,9 +1,12 @@
 package net.blueberrymc.native_util;
 
+import javassist.ClassPool;
+import javassist.CtClass;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.NoSuchElementException;
 
 public class NativeUtilTest {
@@ -72,6 +75,26 @@ public class NativeUtilTest {
     }
 
     @Test
+    public void testInvokeNonvirtualOnInterface() {
+        TestInterface ti = () -> 1;
+        int i = NativeUtil.invokeNonvirtualInt(NativeUtil.getMethod(TestInterface.class, "defaultMethod", "(I)I"), ti, 1);
+        assert i == 125 : i;
+        int ix = NativeUtil.invokeNonvirtualInt(NativeUtil.getMethod(TestInterface.class, "defaultMethod", "()I"), ti);
+        assert ix == 123 : ix;
+        TestInterface fakeTi = (TestInterface) Proxy.newProxyInstance(
+                NativeUtilTest.class.getClassLoader(),
+                new Class[] { TestInterface.class },
+                (proxy, method, args) -> {
+                    if (method.isDefault()) {
+                        return NativeUtil.invokeNonvirtual(method, proxy, args);
+                    }
+                    return 1;
+                });
+        int iy = NativeUtil.invokeNonvirtualInt(NativeUtil.getMethod(TestInterface.class, "defaultMethod", "(I)I"), fakeTi, 0);
+        assert iy == 124 : iy;
+    }
+
+    @Test
     public void testGetLoadedClasses() {
         assert NativeUtil.getLoadedClasses().length >= 1;
     }
@@ -80,6 +103,35 @@ public class NativeUtilTest {
     public void testGetObjectSize() {
         long size = NativeUtil.getObjectSize(new Object());
         assert size == 16L : size;
+    }
+
+    @Test
+    public void testRedefineClass() throws Exception {
+        CtClass clazz = ClassPool.getDefault().get("net.blueberrymc.native_util.NativeUtilTest$C");
+        clazz.getMethod("getsomething", "()I").setBody("return 22222;");
+        clazz.getMethod("getSomething", "()I").setBody("return 23456;");
+        ClassDefinition[] definitions = new ClassDefinition[]{ new ClassDefinition(C.class, clazz.toBytecode()) };
+        C c = new C();
+        assert C.getsomething() == 11111;
+        assert c.getSomething() == 12345;
+        NativeUtil.redefineClasses(definitions);
+        assert C.getsomething() == 22222;
+        //noinspection ConstantConditions
+        assert c.getSomething() == 23456;
+    }
+
+    // test data
+
+    private interface TestInterface {
+        default int defaultMethod(int i) {
+            return 123 + i + method();
+        }
+
+        default int defaultMethod() {
+            return 123;
+        }
+
+        int method();
     }
 
     private static class A {
@@ -92,6 +144,16 @@ public class NativeUtilTest {
     private static class B extends A {
         public int getSomething() {
             return -1;
+        }
+    }
+
+    private static class C {
+        public static int getsomething() {
+            return 11111;
+        }
+
+        public int getSomething() {
+            return 12345;
         }
     }
 

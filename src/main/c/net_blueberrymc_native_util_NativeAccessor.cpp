@@ -1,7 +1,13 @@
 #include "net_blueberrymc_native_util_NativeAccessor.h"
 #include "common-tools.cpp"
+#include <string>
 
 extern "C" {
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void* reserved) {
+    InitCapabilities(vm);
+    return JNI_VERSION_1_8;
+}
+
 JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_init
         (JNIEnv *env, jclass) {
     InitTools(env);
@@ -371,9 +377,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invok
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
     env->DeleteLocalRef(method);
-    if (args == nullptr) {
-        return nullptr;
-    }
+    if (args == nullptr) return nullptr;
     jobject obj;
     if (instance == nullptr) {
         obj = env->CallStaticObjectMethodA(clazz, id, args);
@@ -388,9 +392,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNo
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return;
-    }
+    if (args == nullptr) return;
     env->CallNonvirtualVoidMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -400,9 +402,7 @@ JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invo
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jboolean obj = env->CallNonvirtualBooleanMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -413,9 +413,7 @@ JNIEXPORT jbyte JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeN
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jbyte obj = env->CallNonvirtualByteMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -426,9 +424,7 @@ JNIEXPORT jchar JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeN
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jchar obj = env->CallNonvirtualCharMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -439,9 +435,7 @@ JNIEXPORT jdouble JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invok
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jdouble obj = env->CallNonvirtualDoubleMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -452,9 +446,7 @@ JNIEXPORT jfloat JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invoke
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jfloat obj = env->CallNonvirtualFloatMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -465,9 +457,7 @@ JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNo
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jint obj = env->CallNonvirtualIntMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -478,9 +468,7 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeN
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
+    if (args == nullptr) return 0;
     jlong obj = env->CallNonvirtualLongMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -491,6 +479,7 @@ JNIEXPORT jshort JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invoke
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
+    if (args == nullptr) return 0;
     jshort obj = env->CallNonvirtualShortMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -501,9 +490,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invok
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
     jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return nullptr;
-    }
+    if (args == nullptr) return nullptr;
     jobject obj = env->CallNonvirtualObjectMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
@@ -514,9 +501,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_newIn
         (JNIEnv *env, jclass, jobject ctor, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(ctor);
     jvalue *args = TransformParamsToArgs(env, params, ctor);
-    if (args == nullptr) {
-        return nullptr;
-    }
+    if (args == nullptr) return nullptr;
     jclass cl = GetDeclaringClass(env, ctor);
     env->DeleteLocalRef(ctor);
     if (cl == nullptr) {
@@ -654,5 +639,84 @@ JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getObjec
 JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_registerClassLoadHook
         (JNIEnv *env, jclass, jobject obj) {
     AddClassLoadHook(env, obj);
+}
+
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_isModifiableClass
+        (JNIEnv *env, jclass, jclass clazz) {
+    jboolean isModifiable;
+    GetJvmti(GetVM(env))->IsModifiableClass(reinterpret_cast<jclass>(clazz), &isModifiable);
+    return isModifiable;
+}
+
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_canRedefineClasses
+        (JNIEnv *env, jclass) {
+    jvmtiCapabilities caps;
+    int err = GetJvmti(GetVM(env))->GetCapabilities(&caps);
+    if (err != JVMTI_ERROR_NONE) {
+        env->ThrowNew(ClassNativeException, concat("Failed to get capabilities: ", err).c_str());
+    }
+    return caps.can_redefine_classes;
+}
+
+JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_redefineClasses
+        (JNIEnv *env, jclass, jobjectArray array) {
+    jint count = env->GetArrayLength(array);
+    if (count == 0) return;
+    auto definitions = static_cast<jvmtiClassDefinition *>(malloc(count * sizeof(jvmtiClassDefinition)));
+    for (int i = 0; i < count; ++i) {
+        jobject obj = env->GetObjectArrayElement(array, i);
+        if (obj == nullptr) {
+            env->ThrowNew(ClassIllegalArgumentException, "ClassDefinition cannot be null");
+            free(definitions);
+            return;
+        }
+        auto clazz = reinterpret_cast<jclass>(env->GetObjectField(obj, ClassClassDefinition_clazz));
+        auto arr = reinterpret_cast<jbyteArray>(env->GetObjectField(obj, ClassClassDefinition_bytes));
+        jint length = env->GetArrayLength(arr);
+        auto bytes = new unsigned char[length];
+        env->GetByteArrayRegion(arr, 0, length, reinterpret_cast<jbyte *>(bytes));
+        definitions[i] = {
+                clazz,
+                length,
+                bytes,
+        };
+    }
+    int err = GetJvmti(GetVM(env))->RedefineClasses(count, definitions);
+    if (err != 0) {
+        if (err == JVMTI_ERROR_UNMODIFIABLE_CLASS) {
+            env->ThrowNew(ClassNativeException, "One or more class definition cannot be modified");
+        } else if (err == JVMTI_ERROR_INVALID_CLASS) {
+            env->ThrowNew(ClassNativeException, "One or more class definition is not a valid class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_VERSION) {
+            env->ThrowNew(ClassNativeException, "A new class file has a version number not supported by this VM");
+        } else if (err == JVMTI_ERROR_INVALID_CLASS_FORMAT) {
+            ThrowClass(env, ClassClassFormatError);
+        } else if (err == JVMTI_ERROR_CIRCULAR_CLASS_DEFINITION) {
+            ThrowClass(env, ClassClassCircularityError);
+        } else if (err == JVMTI_ERROR_FAILS_VERIFICATION) {
+            env->ThrowNew(ClassNativeException, "The class bytes failed verification");
+        } else if (err == JVMTI_ERROR_NAMES_DONT_MATCH) {
+            env->ThrowNew(ClassNativeException, "Class name mismatch");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_ADDED) {
+            env->ThrowNew(ClassNativeException, "Method cannot be added while redefining a class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_SCHEMA_CHANGED) {
+            env->ThrowNew(ClassNativeException, "Field cannot be changed while redefining a class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_HIERARCHY_CHANGED) {
+            env->ThrowNew(ClassNativeException, "Hierarchy cannot be changed while redefining a class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_DELETED) {
+            env->ThrowNew(ClassNativeException, "Method cannot be removed while redefining a class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_MODIFIERS_CHANGED) {
+            env->ThrowNew(ClassNativeException, "Class modifiers cannot be changed while redefining a class");
+        } else if (err == JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_MODIFIERS_CHANGED) {
+            env->ThrowNew(ClassNativeException, "Method modifiers cannot be changed while redefining a class");
+        } else {
+            env->ThrowNew(ClassNativeException, concat("Failed to redefine classes: ", err).c_str());
+        }
+        return;
+    }
+    for (int i = 0; i < count; ++i) {
+        delete[] definitions[i].class_bytes;
+    }
+    free(definitions);
 }
 }

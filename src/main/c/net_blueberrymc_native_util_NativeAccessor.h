@@ -447,6 +447,30 @@ JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getObjec
 JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_registerClassLoadHook
   (JNIEnv *, jclass, jobject);
 
+/*
+ * Class:     net_blueberrymc_native_util_NativeAccessor
+ * Method:    isModifiableClass
+ * Signature: (Ljava/lang/Class;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_isModifiableClass
+  (JNIEnv *, jclass, jclass);
+
+/*
+ * Class:     net_blueberrymc_native_util_NativeAccessor
+ * Method:    canRedefineClasses
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_canRedefineClasses
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     net_blueberrymc_native_util_NativeAccessor
+ * Method:    redefineClasses
+ * Signature: ([Lnet/blueberrymc/native_util/ClassDefinition;)V
+ */
+JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_redefineClasses
+  (JNIEnv *, jclass, jobjectArray);
+
 #ifdef __cplusplus
 }
 #endif

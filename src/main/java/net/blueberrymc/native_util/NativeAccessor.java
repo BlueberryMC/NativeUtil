@@ -8,12 +8,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.NoSuchElementException;
 
-/**
- * Using this class without null check (e.g. passing null to @NotNull parameter) could cause serious issue such as
- * crashing the JVM.
- * <strong>Use at your own risk.</strong>
- * @see NativeUtil NativeUtil - NativeAccessor but with null check
- */
 class NativeAccessor {
     static {
         NativeCode.loadLibrary("libnativeutil");
@@ -76,4 +70,7 @@ class NativeAccessor {
     public static native long getObjectSize(@NotNull Object o);
     public static native int getObjectHashcode(@NotNull Object o);
     public static native void registerClassLoadHook(@NotNull ClassLoadHook classLoadHook);
+    public static native boolean isModifiableClass(@NotNull Class<?> clazz);
+    public static native boolean canRedefineClasses();
+    public static native void redefineClasses(@NotNull ClassDefinition[] classDefinition);
 }

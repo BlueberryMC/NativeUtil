@@ -1,2 +1,12 @@
 .idea/
 cmake-build-debug/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.so
+*.dll
+*.cbp
+*.exp
+*.ilk
+*.lib
+*.pdb

@@ -2,8 +2,9 @@
 #include <list>
 #include "jvmti.h"
 #include <iostream>
+#include <string>
 
-extern "C" {
+//extern "C" {
 
 static jclass ClassAssertionError;
 static jclass ClassClass;
@@ -11,6 +12,10 @@ static jclass ClassMethod;
 static jclass ClassThread;
 static jclass ClassIllegalArgumentException;
 static jclass ClassNoSuchElementException;
+static jclass ClassNativeException;
+static jclass ClassClassFormatError;
+static jclass ClassClassCircularityError;
+static jclass ClassClassDefinition;
 static jclass ClassBoolean;
 static jclass ClassByte;
 static jclass ClassCharacter;
@@ -20,20 +25,23 @@ static jclass ClassInteger;
 static jclass ClassLong;
 static jclass ClassShort;
 static jclass ClassClassLoadHook;
-static JavaVM * _javaVM;
-static jvmtiEnv * _jvmti;
+static jmethodID ClassClassLoadHook_transform;
+static jfieldID ClassClassDefinition_clazz;
+static jfieldID ClassClassDefinition_bytes;
+static JavaVM * javaVM;
+static jvmtiEnv * jvmti;
 
 static JavaVM * GetVM(JNIEnv *env) {
-    if (_javaVM != nullptr) return _javaVM;
+    if (javaVM != nullptr) return javaVM;
     JavaVM *jvm;
     env->GetJavaVM(&jvm);
     return jvm;
 }
 
 static jvmtiEnv * GetJvmti(JavaVM *jvm) {
-    if (_jvmti != nullptr) return _jvmti;
+    if (jvmti != nullptr) return jvmti;
     void *ptr;
-    jvm->GetEnv(&ptr, JVMTI_VERSION_1_1);
+    jvm->GetEnv(&ptr, JVMTI_VERSION_1_2);
     return (jvmtiEnv *) ptr;
 }
 
@@ -44,10 +52,10 @@ static jthread GetCurrentThread(JNIEnv *env) {
     return env->CallStaticObjectMethod(ClassThread, mid);
 }
 
-static bool EnsureStackDoesNotContain(jvmtiEnv *jvmti, JNIEnv *env, jmethodID mid) {
-    jvmtiFrameInfo frames[25];
+static bool EnsureStackDoesNotContain(jvmtiEnv *jvmTi, JNIEnv *env, jmethodID mid) {
+    jvmtiFrameInfo frames[300];
     jint count;
-    jvmti->GetStackTrace(GetCurrentThread(env), 0, 25, frames, &count);
+    jvmTi->GetStackTrace(GetCurrentThread(env), 0, 300, frames, &count);
     for (int i = 0; i < count; ++i) {
         if (frames[i].method == mid) return false;
     }
@@ -65,27 +73,44 @@ static void classLoadHook(jvmtiEnv *jvmti_env,
                           jint* new_class_data_len,
                           unsigned char** new_class_data) {
     if (name == nullptr) return;
-    jmethodID mid = jni_env->GetMethodID(ClassClassLoadHook, "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
     jbyteArray arr = jni_env->NewByteArray(class_data_len);
     jni_env->SetByteArrayRegion(arr, 0, class_data_len, (jbyte*) class_data);
     jstring j_name = jni_env->NewStringUTF(name);
     for (const jobject &item : classLoadHooks) {
         jmethodID mid2 = jni_env->GetMethodID(jni_env->GetObjectClass(item), "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
         if (EnsureStackDoesNotContain(jvmti_env, jni_env, mid2)) {
-            jobject obj = jni_env->CallObjectMethod(item, mid, loader, j_name, class_being_redefined, protection_domain, arr);
+            jobject obj = jni_env->CallObjectMethod(item, ClassClassLoadHook_transform, loader, j_name, class_being_redefined, protection_domain, arr);
             if (obj != nullptr) {
                 arr = reinterpret_cast<jbyteArray>(obj);
             }
         }
     }
     *new_class_data_len = jni_env->GetArrayLength(arr);
-    jvmti_env->Allocate(*new_class_data_len, new_class_data);
+    if (jvmti_env->Allocate(*new_class_data_len, new_class_data) != 0) {
+        return;
+    }
     jni_env->GetByteArrayRegion(arr, 0, *new_class_data_len, (jbyte*) *new_class_data);
 }
 
+static void InitCapabilities(JavaVM *vm) {
+    jvmtiCapabilities capabilities;
+    jvmtiEnv * jvmTi = GetJvmti(vm);
+    jvmTi->GetCapabilities(&capabilities);
+    capabilities.can_generate_all_class_hook_events = 1;
+    capabilities.can_retransform_classes = 1;
+    capabilities.can_retransform_any_class = 1;
+    capabilities.can_redefine_classes = 1;
+    capabilities.can_redefine_any_class = 1;
+    jvmTi->AddCapabilities(&capabilities);
+    jvmtiEventCallbacks callbacks;
+    callbacks.ClassFileLoadHook = classLoadHook;
+    jvmTi->SetEventCallbacks(&callbacks, sizeof(callbacks));
+    jvmTi->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, nullptr);
+}
+
 static void InitTools(JNIEnv *env) {
-    _javaVM = GetVM(env);
-    _jvmti = GetJvmti(_javaVM);
+    javaVM = GetVM(env);
+    jvmti = GetJvmti(javaVM);
     classLoadHooks = std::list<jobject>();
     ClassAssertionError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/AssertionError")));
     ClassClass = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Class")));
@@ -93,6 +118,10 @@ static void InitTools(JNIEnv *env) {
     ClassThread = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Thread")));
     ClassIllegalArgumentException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/IllegalArgumentException")));
     ClassNoSuchElementException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/NoSuchElementException")));
+    ClassNativeException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/NativeException")));
+    ClassClassFormatError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/ClassFormatError")));
+    ClassClassCircularityError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/ClassCircularityError")));
+    ClassClassDefinition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/ClassDefinition")));
     ClassBoolean = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Boolean")));
     ClassByte = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Byte")));
     ClassCharacter = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Character")));
@@ -102,17 +131,10 @@ static void InitTools(JNIEnv *env) {
     ClassLong = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Long")));
     ClassShort = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Short")));
     ClassClassLoadHook = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/ClassLoadHook")));
-    jvmtiCapabilities capabilities;
-    jvmtiEnv * jvmti = GetJvmti(GetVM(env));
-    jvmti->GetCapabilities(&capabilities);
-    capabilities.can_generate_all_class_hook_events = 1;
-    capabilities.can_retransform_classes = 1;
-    capabilities.can_retransform_any_class = 1;
-    jvmti->AddCapabilities(&capabilities);
-    jvmtiEventCallbacks callbacks;
-    callbacks.ClassFileLoadHook = classLoadHook;
-    jvmti->SetEventCallbacks(&callbacks, sizeof(callbacks));
-    jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, nullptr);
+    ClassClassLoadHook_transform = env->GetMethodID(ClassClassLoadHook, "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
+    ClassClassDefinition_clazz = env->GetFieldID(ClassClassDefinition, "clazz", "Ljava/lang/Class;");
+    ClassClassDefinition_bytes = env->GetFieldID(ClassClassDefinition, "bytes", "[B");
+    InitCapabilities(javaVM);
 }
 
 static void AddClassLoadHook(JNIEnv *env, jobject handler) {
@@ -278,15 +300,16 @@ static jvalue SetValue(JNIEnv *env, jvalue value, jobject obj, const std::string
 }
 
 static jvalue * TransformParamsToArgs(JNIEnv *env, jobjectArray params, jobject method) {
-    jobjectArray arr = GetMethodParams(env, method);
-    jstring * str = ClassArrayToJStrings(env, arr);
-    jvalue * args;
+    if (params == nullptr) return static_cast<jvalue *>(malloc(0));
     int size = env->GetArrayLength(params);
-    const char * * chr = JStringsToChars(env, str, size);
+    jobjectArray arr = GetMethodParams(env, method);
     if (size != env->GetArrayLength(arr)) {
         env->ThrowNew(ClassIllegalArgumentException, "Argument count mismatch");
         return nullptr;
     }
+    jstring * str = ClassArrayToJStrings(env, arr);
+    jvalue * args;
+    const char * * chr = JStringsToChars(env, str, size);
     args = static_cast<jvalue *>(malloc(size * sizeof(jvalue)));
     env->EnsureLocalCapacity(size + 5);
     for (int i = 0; i < size; i++) {
@@ -303,4 +326,8 @@ static jvalue * TransformParamsToArgs(JNIEnv *env, jobjectArray params, jobject 
     return args;
 }
 
+static std::string concat(const char * chars, int i) {
+    return std::string(chars) + std::to_string(i);
 }
+
+//}

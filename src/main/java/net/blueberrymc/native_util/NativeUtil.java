@@ -436,7 +436,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -447,7 +448,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -458,7 +460,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -469,7 +472,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -480,7 +484,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -491,7 +496,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -502,7 +508,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -513,7 +520,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -524,7 +532,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -535,7 +544,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -546,7 +556,8 @@ public class NativeUtil {
     }
 
     /**
-     * Invoke a method without calling {@link Method#setAccessible(boolean)}.
+     * Invoke a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
      * @param method the method
      * @param instance the instance
      */
@@ -588,6 +599,14 @@ public class NativeUtil {
         return NativeAccessor.newInstance(constructor, args);
     }
 
+    /**
+     * Find a static method with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name method name
+     * @param signature method signature
+     * @return method, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Method getStaticMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -597,6 +616,14 @@ public class NativeUtil {
         return NativeAccessor.getStaticMethod(clazz, name, signature);
     }
 
+    /**
+     * Find an instance method with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name method name
+     * @param signature method signature
+     * @return method, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Method getNonstaticMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -606,6 +633,14 @@ public class NativeUtil {
         return NativeAccessor.getNonstaticMethod(clazz, name, signature);
     }
 
+    /**
+     * Find a method with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name method name
+     * @param signature method signature
+     * @return method, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Method getMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -619,6 +654,14 @@ public class NativeUtil {
         }
     }
 
+    /**
+     * Find a static field with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name field name
+     * @param signature field signature
+     * @return field, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Field getStaticField(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -628,6 +671,14 @@ public class NativeUtil {
         return NativeAccessor.getStaticField(clazz, name, signature);
     }
 
+    /**
+     * Find an instance field with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name field name
+     * @param signature field signature
+     * @return field, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Field getNonstaticField(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -637,6 +688,14 @@ public class NativeUtil {
         return NativeAccessor.getNonstaticField(clazz, name, signature);
     }
 
+    /**
+     * Find a field with class and matching name + signature.
+     * @param clazz class to find field at
+     * @param name field name
+     * @param signature field signature
+     * @return field, can never be null
+     * @throws NoSuchElementException if field cannot be found
+     */
     @Contract(pure = true)
     @NotNull
     public static Field getField(@NotNull Class<?> clazz, @NotNull String name, @NotNull String signature) throws NoSuchElementException {
@@ -650,6 +709,14 @@ public class NativeUtil {
         }
     }
 
+    /**
+     * Define a new class for a class loader with provided class bytes.
+     * @param name class name
+     * @param classLoader class loader to load at.
+     * @param buf class bytes
+     * @param len length of class bytes
+     * @return new class
+     */
     @NotNull
     public static Class<?> defineClass(@NotNull String name, @NotNull ClassLoader classLoader, byte[] buf, int len) {
         Objects.requireNonNull(name);
@@ -658,37 +725,102 @@ public class NativeUtil {
         return NativeAccessor.defineClass(name, classLoader, buf, len);
     }
 
+    /**
+     * Triggers force garbage collection. But why?
+     */
     public static void forceGarbageCollection() {
         NativeAccessor.forceGarbageCollection();
     }
 
+    /**
+     * Get ALL loaded classes.
+     * @return all loaded classes
+     */
     @NotNull
     public static Class<?>[] getLoadedClasses() {
         return NativeAccessor.getLoadedClasses();
     }
 
+    /**
+     * Get all loaded classes in class loader.
+     * @param classLoader classLoader to get classes
+     * @return all classes in class loader
+     */
     @NotNull
     public static Class<?>[] getClassLoaderClasses(@NotNull ClassLoader classLoader) {
         return NativeAccessor.getClassLoaderClasses(classLoader);
     }
 
+    /**
+     * Retransform classes
+     * @param classes classes to retransform
+     */
     public static void retransformClasses(@NotNull Class<?>[] classes) {
         Objects.requireNonNull(classes);
         NativeAccessor.retransformClasses(classes);
     }
 
+    /**
+     * Get the object size of an object
+     * @param o an object
+     * @return object size in bytes
+     */
     public static long getObjectSize(@NotNull Object o) {
         Objects.requireNonNull(o);
         return NativeAccessor.getObjectSize(o);
     }
 
+    /**
+     * Get the object hashcode of an object
+     * @param o an object
+     * @return hashcode
+     */
     public static int getObjectHashcode(@NotNull Object o) {
         Objects.requireNonNull(o);
         return NativeAccessor.getObjectHashcode(o);
     }
 
+    /**
+     * Registers ClassLoadHook for transforming classes.
+     */
     public static void registerClassLoadHook(@NotNull ClassLoadHook classLoadHook) {
         Objects.requireNonNull(classLoadHook);
         NativeAccessor.registerClassLoadHook(classLoadHook);
+    }
+
+    /**
+     * Checks whether the class is modifiable. Primitive classes and array classes are never modifiable.
+     * @param clazz the class to check
+     * @return true if modifiable, false otherwise
+     */
+    public static boolean isModifiableClass(@NotNull Class<?> clazz) {
+        Objects.requireNonNull(clazz);
+        if (clazz.isPrimitive()) return false;
+        if (clazz.isArray()) return false;
+        return NativeAccessor.isModifiableClass(clazz);
+    }
+
+    /**
+     * Checks if NativeUtil can redefine some class.
+     */
+    public static boolean canRedefineClasses() {
+        return NativeAccessor.canRedefineClasses();
+    }
+
+    /**
+     * The redefinition may change method bodies, the constant pool and attributes. The redefinition must not add,
+     * remove or rename fields or methods, change the signatures of methods, change modifiers, or change inheritance.
+     * These restrictions may be lifted in future versions.
+     * <p>See <a href="https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html#RedefineClasses">JVM(TM) Tool Interface 1.2.3</a> for more details.</p>
+     */
+    public static void redefineClasses(@NotNull ClassDefinition[] classDefinition) {
+        if (!canRedefineClasses()) throw new RuntimeException("Cannot redefine classes");
+        Objects.requireNonNull(classDefinition);
+        for (ClassDefinition def : classDefinition) {
+            if (!isModifiableClass(def.clazz)) {
+                throw new IllegalArgumentException("Class " + def.clazz.getCanonicalName() + " is unmodifiable");
+            }
+        }
+        NativeAccessor.redefineClasses(classDefinition);
     }
 }
