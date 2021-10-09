@@ -31,6 +31,8 @@ static jfieldID ClassClassDefinition_bytes;
 static JavaVM * javaVM;
 static jvmtiEnv * jvmti;
 
+static bool hasRegClHook = false;
+
 static JavaVM * GetVM(JNIEnv *env) {
     if (javaVM != nullptr) return javaVM;
     JavaVM *jvm;
@@ -102,10 +104,12 @@ static void InitCapabilities(JavaVM *vm) {
     capabilities.can_redefine_classes = 1;
     capabilities.can_redefine_any_class = 1;
     jvmTi->AddCapabilities(&capabilities);
+    jvmTi->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, nullptr);
+    if (hasRegClHook) return;
     jvmtiEventCallbacks callbacks;
     callbacks.ClassFileLoadHook = classLoadHook;
     jvmTi->SetEventCallbacks(&callbacks, sizeof(callbacks));
-    jvmTi->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, nullptr);
+    hasRegClHook = true;
 }
 
 static void InitTools(JNIEnv *env) {
