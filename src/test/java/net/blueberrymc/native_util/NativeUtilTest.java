@@ -32,9 +32,11 @@ public class NativeUtilTest {
     @Test
     public void invoke() throws ReflectiveOperationException {
         YouCannotCreateInstanceOfThisClass instance = NativeUtil.allocateInstance(YouCannotCreateInstanceOfThisClass.class);
+
         Method method = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("calculate", int.class, int.class);
         int i = (int) NativeUtil.invoke(method, instance, 100000, 14514);
         assert i == 114514 : i;
+
         Method method2 = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("calculate", Integer.class, Integer.class);
         int i2 = (int) NativeUtil.invoke(method2, null, 100000, 15115);
         assert i2 == 115115 : i2;
@@ -66,12 +68,13 @@ public class NativeUtilTest {
     }
 
     @Test
-    public void testInvokeNonvirtual() {
+    public void testInvoke() {
         B b = NativeUtil.allocateInstance(B.class);
-        Method m = NativeUtil.getMethod(A.class, "getSomething", "()I");
-        int i = NativeUtil.invokeNonvirtualInt(m, b);
-        assert i == 42 : i;
-        assert b.getSomething() == -1;
+        Method m = NativeUtil.getMethod(A.class, "getSomething", "()Ljava/lang/Object;");
+        Object i = NativeUtil.invokeNonvirtualObject(m, b);
+        assert ((Integer) i) == 42 : i;
+        Integer i2 = (Integer) NativeUtil.invokeObject(m, b);
+        assert i2 == -1;
     }
 
     @Test
@@ -135,15 +138,18 @@ public class NativeUtilTest {
     }
 
     private static class A {
+        protected final int something = 42;
+
         @SuppressWarnings("unused")
-        public int getSomething() {
-            return 42;
+        public Object getSomething() {
+            return this.something;
         }
     }
 
     private static class B extends A {
-        public int getSomething() {
-            return -1;
+        @Override
+        public Integer getSomething() {
+            return this.something - 43;
         }
     }
 
@@ -173,6 +179,8 @@ public class NativeUtilTest {
         }
 
         public Integer calculate(int x, int y) {
+            //noinspection ConstantConditions
+            if (this == null) throw new AssertionError("\"this\" is null");
             return x + y;
         }
 
