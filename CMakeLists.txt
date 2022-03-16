@@ -10,7 +10,7 @@ include_directories(.)
 if (JNI_FOUND)
     include_directories("${JNI_INCLUDE_DIRS}")
 else()
-    include_directories("$ENV{JAVA_HOME}/include;$ENV{JAVA_HOME}/include/win32;$ENV{JAVA_HOME}/include/linux")
+    include_directories("$ENV{JAVA_HOME}/include;$ENV{JAVA_HOME}/include/win32;$ENV{JAVA_HOME}/include/linux;$ENV{JAVA_HOME}/include/darwin")
 endif()
 
 add_library(libnativeutil SHARED
