@@ -1,7 +1,7 @@
 # Make sure to specify x64 toolchain
 
 cmake_minimum_required(VERSION 3.12)
-project(libnativeutil LANGUAGES CXX)
+project(nativeutil LANGUAGES CXX)
 set(JAVA_AWT_LIBRARY "")
 set(JAVA_AWT_INCLUDE_PATH "")
 find_package(JNI)
