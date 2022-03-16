@@ -1,6 +1,6 @@
 # Make sure to specify x64 toolchain
 
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.12)
 project(libnativeutil LANGUAGES CXX)
 set(JAVA_AWT_LIBRARY "")
 set(JAVA_AWT_INCLUDE_PATH "")
@@ -14,6 +14,6 @@ else()
 endif()
 
 add_library(libnativeutil SHARED
-        net_blueberrymc_native_util_NativeAccessor.cpp
-        net_blueberrymc_native_util_NativeAccessor.h
-        common-tools.cpp)
+        src/main/c/net_blueberrymc_native_util_NativeAccessor.cpp
+        src/main/c/net_blueberrymc_native_util_NativeAccessor.h
+        src/main/c/common-tools.cpp)
