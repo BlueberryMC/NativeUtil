@@ -17,3 +17,5 @@ add_library(libnativeutil SHARED
         src/main/c/net_blueberrymc_native_util_NativeAccessor.cpp
         src/main/c/net_blueberrymc_native_util_NativeAccessor.h
         src/main/c/common-tools.cpp)
+
+set_target_properties(libnativeutil PROPERTIES CXX_STANDARD 14)

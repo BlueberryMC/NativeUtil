@@ -2,3 +2,14 @@
 .idea/
 target/
 hs_err_*.log
+cmake-build-debug/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.so
+*.dll
+*.cbp
+*.exp
+*.ilk
+*.lib
+*.pdb

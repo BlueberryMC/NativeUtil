@@ -8,7 +8,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.NoSuchElementException;
 
-class NativeAccessor {
+/**
+ * NativeAccessor gives you raw access to native methods, without any checks/overheads.
+ */
+public class NativeAccessor {
     static {
         NativeCode.loadLibrary("libnativeutil");
         init();

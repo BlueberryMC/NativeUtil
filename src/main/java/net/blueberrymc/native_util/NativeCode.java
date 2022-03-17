@@ -18,6 +18,7 @@ public class NativeCode {
     public NativeCode(@NotNull String name) {
         LazyOSType os = LazyOSType.detectOS();
         if (os == LazyOSType.Windows) suffix = ".dll";
+        if (os == LazyOSType.Mac_OS || os == LazyOSType.Mac_OS_X) suffix = ".dylib";
         this.name = name;
     }
 

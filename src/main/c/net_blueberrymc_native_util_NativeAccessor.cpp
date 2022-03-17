@@ -675,10 +675,10 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_redefine
         jint length = env->GetArrayLength(arr);
         auto bytes = new unsigned char[length];
         env->GetByteArrayRegion(arr, 0, length, reinterpret_cast<jbyte *>(bytes));
-        definitions[i] = {
+        definitions[i] = jvmtiClassDefinition {
                 clazz,
                 length,
-                bytes,
+                bytes
         };
     }
     int err = GetJvmti(GetVM(env))->RedefineClasses(count, definitions);
