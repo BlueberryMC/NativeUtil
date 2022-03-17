@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
  */
 public class NativeAccessor {
     static {
-        NativeCode.loadLibrary("libnativeutil");
+        NativeCode.loadLibrary("nativeutil");
         init();
     }
 

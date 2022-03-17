@@ -13,9 +13,9 @@ else()
     include_directories("$ENV{JAVA_HOME}/include;$ENV{JAVA_HOME}/include/win32;$ENV{JAVA_HOME}/include/linux;$ENV{JAVA_HOME}/include/darwin")
 endif()
 
-add_library(libnativeutil SHARED
+add_library(nativeutil SHARED
         src/main/c/net_blueberrymc_native_util_NativeAccessor.cpp
         src/main/c/net_blueberrymc_native_util_NativeAccessor.h
         src/main/c/common-tools.cpp)
 
-set_target_properties(libnativeutil PROPERTIES CXX_STANDARD 14)
+set_target_properties(nativeutil PROPERTIES CXX_STANDARD 14)

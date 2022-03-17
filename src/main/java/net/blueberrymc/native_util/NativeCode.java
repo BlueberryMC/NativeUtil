@@ -13,18 +13,24 @@ import java.net.URISyntaxException;
 public class NativeCode {
     private boolean loaded = false;
     private final String name;
+    private String prefix = "lib";
     private String suffix = ".so";
 
     public NativeCode(@NotNull String name) {
         LazyOSType os = LazyOSType.detectOS();
-        if (os == LazyOSType.Windows) suffix = ".dll";
-        if (os == LazyOSType.Mac_OS || os == LazyOSType.Mac_OS_X) suffix = ".dylib";
+        if (os == LazyOSType.Windows) {
+            prefix = "";
+            suffix = ".dll";
+        }
+        if (os == LazyOSType.Mac_OS || os == LazyOSType.Mac_OS_X) {
+            suffix = ".dylib";
+        }
         this.name = name;
     }
 
     public boolean load() throws UnsatisfiedLinkError {
         if (loaded) return true;
-        String fullName = name + suffix;
+        String fullName = prefix + name + suffix;
         try {
             System.loadLibrary(fullName);
             loaded = true;
@@ -39,7 +45,7 @@ public class NativeCode {
                         )
                 );
             }
-            File temp = File.createTempFile(name, suffix);
+            File temp = File.createTempFile(prefix + name, suffix);
             temp.deleteOnExit();
             OutputStream os = new FileOutputStream(temp);
             Bytes.copy(soFile, os);

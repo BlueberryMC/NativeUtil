@@ -32,6 +32,4 @@ jobs:
         shell: bash
         run: cmake --build . --config $BUILD_TYPE
       - working-directory: ${{runner.workspace}}/build
-        run: ls -alF .
-      - working-directory: ${{runner.workspace}}/build
-        run: ls -alF *
+        run: ls .
