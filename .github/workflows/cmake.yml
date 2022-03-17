@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v2.2.4
         with:
           name: nativeutil.dll
-          path: '${{runner.workspace}}/build/x64/nativeutil.dll'
+          path: '${{runner.workspace}}/build/Release/nativeutil.dll'
