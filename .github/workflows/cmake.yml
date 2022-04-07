@@ -1,4 +1,4 @@
-name: CMake
+name: CMake & Deploy
 
 on:
   push:
@@ -46,3 +46,20 @@ jobs:
         with:
           name: nativeutil.dll
           path: '${{runner.workspace}}/build/Release/nativeutil.dll'
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.1.0
+        with:
+          java-version: '11'
+          distribution: temurin
+          server-id: blueberrymc-repo
+          server-username: ${{ secrets.MAVEN_USERNAME }}
+          server-password: ${{ secrets.MAVEN_PASSWORD }}
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Deploy to Maven
+        run: mvn deploy --file pom.xml
