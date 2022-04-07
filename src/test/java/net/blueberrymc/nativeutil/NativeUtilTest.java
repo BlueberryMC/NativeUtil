@@ -39,17 +39,11 @@ public class NativeUtilTest {
 
         Method method2 = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("calculate", Integer.class, Integer.class);
         long method2id = NativeUtil.getMethodId(method2);
-        int i2 = NativeUtil.callInt(method2id, null, 100000, 15115);
+        int i2 = NativeUtil.callInt(method2id, null, new BoxedValue(100000), new BoxedValue(15115));
         assert i2 == 115115 : i2;
 
         Method method3 = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("println", int.class);
         NativeUtil.invokeVoid(method3, instance, 42);
-    }
-
-    @Test
-    public void newInstance() throws ReflectiveOperationException {
-        YouCannotCreateInstanceOfThisClass instance = NativeUtil.newInstance(YouCannotCreateInstanceOfThisClass.class.getDeclaredConstructor(Void.class), (Object) null);
-        assert instance.calculate(1, 1) == 2;
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -61,7 +55,7 @@ public class NativeUtilTest {
     @Test
     public void testGetStaticMethod() {
         Method m = NativeUtil.getMethod(YouCannotCreateInstanceOfThisClass.class, "calculate", "(Ljava/lang/Integer;Ljava/lang/Integer;)I");
-        int i = (int) NativeUtil.invoke(m, null, 44, -2);
+        int i = (int) NativeUtil.invoke(m, null, new BoxedValue(44), new BoxedValue(-2));
         assert i == 42 : i;
     }
 
@@ -114,7 +108,7 @@ public class NativeUtilTest {
 
     @Test
     public void testRedefineClass() throws Exception {
-        CtClass clazz = ClassPool.getDefault().get("net.blueberrymc.native_util.NativeUtilTest$C");
+        CtClass clazz = ClassPool.getDefault().get("net.blueberrymc.nativeutil.NativeUtilTest$C");
         clazz.getMethod("getsomething", "()I").setBody("return 22222;");
         clazz.getMethod("getSomething", "()I").setBody("return 23456;");
         ClassDefinition[] definitions = new ClassDefinition[]{ new ClassDefinition(C.class, clazz.toBytecode()) };

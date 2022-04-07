@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <list>
 #include "jvmti.h"
-#include <iostream>
 #include <string>
 
 //extern "C" {
@@ -16,6 +15,7 @@ static jclass ClassClassFormatError;
 static jclass ClassClassCircularityError;
 static jclass ClassClassDefinition;
 static jclass ClassClassLoadHook;
+static jclass ClassBoxedValue;
 static jclass ClassBoolean;
 static jclass ClassByte;
 static jclass ClassCharacter;
@@ -35,6 +35,7 @@ static jmethodID ClassLong_longValue;
 static jmethodID ClassShort_shortValue;
 static jfieldID ClassClassDefinition_clazz;
 static jfieldID ClassClassDefinition_bytes;
+static jfieldID ClassBoxedValue_value;
 static JavaVM * javaVM;
 static jvmtiEnv * jvmti;
 
@@ -133,6 +134,7 @@ static void InitTools(JNIEnv *env) {
     ClassClassCircularityError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/ClassCircularityError")));
     ClassClassDefinition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/ClassDefinition")));
     ClassClassLoadHook = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/ClassLoadHook")));
+    ClassBoxedValue = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/BoxedValue")));
     ClassBoolean = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Boolean")));
     ClassByte = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Byte")));
     ClassCharacter = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Character")));
@@ -152,6 +154,7 @@ static void InitTools(JNIEnv *env) {
     ClassShort_shortValue = env->GetMethodID(ClassShort, "shortValue", "()S");
     ClassClassDefinition_clazz = env->GetFieldID(ClassClassDefinition, "clazz", "Ljava/lang/Class;");
     ClassClassDefinition_bytes = env->GetFieldID(ClassClassDefinition, "bytes", "[B");
+    ClassBoxedValue_value = env->GetFieldID(ClassBoxedValue, "value", "Ljava/lang/Object;");
     InitCapabilities(javaVM);
 }
 
@@ -231,6 +234,8 @@ static jvalue * TransformParams(JNIEnv *env, jobjectArray params) {
             object_args[i].j = ToLong(env, obj);
         } else if (env->IsInstanceOf(obj, ClassShort)) {
             object_args[i].s = ToShort(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassBoxedValue)) {
+            object_args[i].l = env->GetObjectField(obj, ClassBoxedValue_value);
         } else {
             object_args[i].l = obj;
         }
@@ -253,7 +258,7 @@ static inline void* addr_from_java(jlong addr) {
 
 static inline jlong addr_to_java(void* p) {
     //assert(p == (void*)(uintptr_t)p, "must not be odd high bits");
-    return (uintptr_t)p;
+    return (uintptr_t)p; // NOLINT(cppcoreguidelines-narrowing-conversions)
 }
 
 //}
