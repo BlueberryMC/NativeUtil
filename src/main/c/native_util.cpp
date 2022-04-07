@@ -1,5 +1,6 @@
 #include "native_util.h"
 #include "common_tools.cpp"
+#include <cstring>
 #include <string>
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
