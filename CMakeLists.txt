@@ -14,8 +14,8 @@ else()
 endif()
 
 add_library(nativeutil SHARED
-        src/main/c/net_blueberrymc_native_util_NativeAccessor.cpp
-        src/main/c/net_blueberrymc_native_util_NativeAccessor.h
-        src/main/c/common-tools.cpp)
+        src/main/c/native_util.cpp
+        src/main/c/native_util.h
+        src/main/c/common_tools.cpp)
 
 set_target_properties(nativeutil PROPERTIES CXX_STANDARD 14)

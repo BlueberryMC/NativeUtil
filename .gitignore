@@ -3,6 +3,7 @@
 target/
 hs_err_*.log
 cmake-build-debug/
+cmake-build-release/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

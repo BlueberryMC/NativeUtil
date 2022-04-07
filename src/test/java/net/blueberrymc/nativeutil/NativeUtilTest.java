@@ -1,4 +1,4 @@
-package net.blueberrymc.native_util;
+package net.blueberrymc.nativeutil;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -34,12 +34,16 @@ public class NativeUtilTest {
         YouCannotCreateInstanceOfThisClass instance = NativeUtil.allocateInstance(YouCannotCreateInstanceOfThisClass.class);
 
         Method method = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("calculate", int.class, int.class);
-        int i = (int) NativeUtil.invoke(method, instance, 100000, 14514);
-        assert i == 114514 : i;
+        int i = (int) NativeUtil.invoke(method, instance, 44, -2);
+        assert i == 42 : i;
 
         Method method2 = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("calculate", Integer.class, Integer.class);
-        int i2 = (int) NativeUtil.invoke(method2, null, 100000, 15115);
+        long method2id = NativeUtil.getMethodId(method2);
+        int i2 = NativeUtil.callInt(method2id, null, 100000, 15115);
         assert i2 == 115115 : i2;
+
+        Method method3 = YouCannotCreateInstanceOfThisClass.class.getDeclaredMethod("println", int.class);
+        NativeUtil.invokeVoid(method3, instance, 42);
     }
 
     @Test
@@ -186,6 +190,10 @@ public class NativeUtilTest {
 
         private static int calculate(Integer x, Integer y) {
             return x + y;
+        }
+
+        public static void println(int x) {
+            System.out.println(x);
         }
     }
 }

@@ -1,4 +1,4 @@
-package net.blueberrymc.native_util;
+package net.blueberrymc.nativeutil;
 
 public class NativeException extends RuntimeException {
     public NativeException(String message) {

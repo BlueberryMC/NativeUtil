@@ -1,4 +1,4 @@
-package net.blueberrymc.native_util;
+package net.blueberrymc.nativeutil;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -591,6 +591,206 @@ public class NativeUtil {
     }
 
     /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static void callVoid(long method, @Nullable Object instance, Object... args) {
+        NativeAccessor.callVoid(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static boolean callBoolean(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callBoolean(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static byte callByte(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callByte(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static char callChar(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callChar(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static double callDouble(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callDouble(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static float callFloat(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callFloat(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static int callInt(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callInt(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static long callLong(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callLong(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static short callShort(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callShort(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static Object callObject(long method, @Nullable Object instance, Object... args) {
+        return NativeAccessor.callObject(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static void callNonvirtualVoid(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        NativeAccessor.callNonvirtualVoid(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static boolean callNonvirtualBoolean(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualBoolean(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static byte callNonvirtualByte(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualByte(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static char callNonvirtualChar(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualChar(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static double callNonvirtualDouble(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualDouble(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static float callNonvirtualFloat(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualFloat(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static int callNonvirtualInt(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualInt(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static long callNonvirtualLong(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualLong(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static short callNonvirtualShort(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualShort(method, instance, args);
+    }
+
+    /**
+     * Call a method without calling {@link Method#setAccessible(boolean)}. This method also allows invoking
+     * "super super" method.
+     * @param method the method
+     * @param instance the instance
+     */
+    public static Object callNonvirtualObject(long method, @NotNull Object instance, Object... args) {
+        Objects.requireNonNull(instance);
+        return NativeAccessor.callNonvirtualObject(method, instance, args);
+    }
+
+    /**
      * Create new instance without calling {@link Constructor#setAccessible(boolean)}.
      * @param constructor the constructor to call
      */
@@ -853,8 +1053,9 @@ public class NativeUtil {
 
     /**
      * Checks if NativeUtil can redefine some class.
+     * @throws NativeException when an error occurred while getting capabilities
      */
-    public static boolean canRedefineClasses() {
+    public static boolean canRedefineClasses() throws NativeException {
         return NativeAccessor.canRedefineClasses();
     }
 
@@ -863,8 +1064,15 @@ public class NativeUtil {
      * remove or rename fields or methods, change the signatures of methods, change modifiers, or change inheritance.
      * These restrictions may be lifted in future versions.
      * <p>See <a href="https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html#RedefineClasses">JVM(TM) Tool Interface 1.2.3</a> for more details.</p>
+     * @throws NativeException if one or more class definitions cannot be modified, not a valid class, contains
+     * unsupported version, fails verification, incorrect name, changed hierarchy or changed modifier. NativeException
+     * also will be thrown if method was added during redefinition, method modifier was changed during redefinition,
+     * field was added or changed during redefinition, field was added or changed during redefinition, or some unknown
+     * error occurs.
+     * @throws ClassFormatError if class format is invalid
+     * @throws ClassCircularityError if class circularity was detected during redefinition
      */
-    public static void redefineClasses(@NotNull ClassDefinition[] classDefinition) {
+    public static void redefineClasses(@NotNull ClassDefinition[] classDefinition) throws NativeException, ClassFormatError, ClassCircularityError {
         if (!canRedefineClasses()) throw new RuntimeException("Cannot redefine classes");
         Objects.requireNonNull(classDefinition);
         for (ClassDefinition def : classDefinition) {
@@ -873,5 +1081,49 @@ public class NativeUtil {
             }
         }
         NativeAccessor.redefineClasses(classDefinition);
+    }
+
+    /**
+     * Gets the address of the id of the method. <strong>Note: This method allocates the memory and you will need to
+     * {@link #free(long) free} the memory.</strong> Thus, it is not wise to call this method in a loop.
+     * @param method the method
+     * @return the address
+     */
+    public static long getMethodId(@NotNull Method method) {
+        Objects.requireNonNull(method);
+        return NativeAccessor.getMethodId(method);
+    }
+
+    /**
+     * Gets the reflected method from the id. Passing the wrong address may cause a JVM crash.
+     * @param method the method address
+     * @param isStatic true if the method is static, false otherwise
+     * @return the reflected method
+     */
+    public static Method getMethodFromId(long method, boolean isStatic) {
+        return NativeAccessor.getMethodFromId(method, isStatic);
+    }
+
+    /**
+     * Attempt to free memory at the given address. This method may cause the JVM to crash when an invalid address is
+     * passed to the method.
+     * @param address the address
+     */
+    public static void free(long address) {
+        NativeAccessor.free(address);
+    }
+
+    /**
+     * Sets the first num bytes of the block of memory pointed by ptr to the specified value (interpreted as an
+     * unsigned char). This method is not guaranteed to succeed and may crash the JVM when an invalid address is
+     * passed to the method.
+     * @param address Pointer to the block of memory to fill.
+     * @param value Value to be set. The value is passed as an int, but the function fills the block with memory using
+     *              the unsigned char conversion of this value.
+     * @param size Number of bytes to be set to the value.
+     * @return ptr
+     */
+    public static long memset(long address, int value, int size) {
+        return NativeAccessor.memset(address, value, size);
     }
 }

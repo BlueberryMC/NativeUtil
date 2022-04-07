@@ -1,5 +1,7 @@
 # NativeUtil
-Adds some methods that is possible in JNI, but not possible in Java (without using Unsafe etc).
+Adds some methods that are possible in JNI, but not possible in Java (without using Unsafe etc.)
+
+Be careful though: `callTypeMethod` and `invokeType` methods are ~34x slower than reflection (68.447 ± 30.569 ns/op).
 
 ## Repository
 
@@ -17,7 +19,7 @@ Adds some methods that is possible in JNI, but not possible in Java (without usi
     <dependency>
         <groupId>net.blueberrymc</groupId>
         <artifactId>native-util</artifactId>
-        <version>1.2.6</version>
+        <version>[version]</version>
     </dependency>
 </dependencies>
 ```
@@ -32,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.blueberrymc:native-util:1.2.6'
+    implementation 'net.blueberrymc:native-util:[version]'
 }
 ```
 
@@ -44,6 +46,6 @@ repositories {
 }
 
 dependencies {
-    implementation("net.blueberrymc:native-util:1.2.6")
+    implementation("net.blueberrymc:native-util:[version]")
 }
 ```

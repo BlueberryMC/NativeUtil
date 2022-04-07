@@ -1,6 +1,40 @@
-#include "net_blueberrymc_native_util_NativeAccessor.h"
-#include "common-tools.cpp"
+#include "native_util.h"
+#include "common_tools.cpp"
 #include <string>
+
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+
+#define CALL_METHOD(jtype, type) \
+  if (env->GetArrayLength(params) == 0) { \
+    if (instance == nullptr) { \
+      return env->CallStatic##type##Method(clazz, id); \
+    } else { \
+      return env->Call##type##Method(instance, id); \
+    } \
+  } \
+  jvalue *args = TransformParams(env, params); \
+  jtype obj; \
+  if (instance == nullptr) { \
+    obj = env->CallStatic##type##MethodA(clazz, id, args); \
+  } else { \
+    obj = env->Call##type##MethodA(instance, id, args); \
+  } \
+  free(args); \
+  return obj;
+
+#define CALL_NONVIRTUAL_METHOD(jtype, type) \
+  if (env->GetArrayLength(params) == 0) { \
+    return env->CallNonvirtual##type##Method(instance, klass, id); \
+  } \
+  jvalue *args = TransformParams(env, params); \
+  jtype obj = env->CallNonvirtual##type##MethodA(instance, klass, id, args); \
+  free(args); \
+  return obj;
+
+struct MethodIDInfo {
+  jmethodID id;
+  jclass klass;
+};
 
 extern "C" {
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void* reserved) {
@@ -8,31 +42,31 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void* reserved) {
     return JNI_VERSION_1_8;
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_init
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_init
         (JNIEnv *env, jclass) {
     InitTools(env);
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_appendToBootstrapClassLoaderSearch
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_appendToBootstrapClassLoaderSearch
         (JNIEnv *env, jclass, jstring url) {
     const char *chars = env->GetStringUTFChars(url, nullptr);
     GetJvmti(GetVM(env))->AddToBootstrapClassLoaderSearch(chars);
     env->ReleaseStringUTFChars(url, chars);
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_appendToSystemClassLoaderSearch
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_appendToSystemClassLoaderSearch
         (JNIEnv *env, jclass, jstring url) {
     const char *chars = env->GetStringUTFChars(url, nullptr);
     GetJvmti(GetVM(env))->AddToSystemClassLoaderSearch(chars);
     env->ReleaseStringUTFChars(url, chars);
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_allocateInstance
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_allocateInstance
         (JNIEnv *env, jclass, jclass clazz) {
     return env->AllocObject(clazz);
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setFloat
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setFloat
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jfloat value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -42,7 +76,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setFloat
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setBoolean
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setBoolean
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jboolean value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -52,7 +86,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setBoole
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setByte
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setByte
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jbyte value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -62,7 +96,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setByte
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setChar
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setChar
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jchar value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -72,7 +106,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setChar
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setDouble
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setDouble
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jdouble value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -82,7 +116,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setDoubl
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setInt
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setInt
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jint value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -92,7 +126,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setInt
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setLong
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setLong
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jlong value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -102,7 +136,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setLong
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setShort
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setShort
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jshort value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -112,7 +146,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setShort
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setObject
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setObject
         (JNIEnv *env, jclass clazz, jobject field, jobject instance, jobject value) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -122,7 +156,7 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_setObjec
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getBoolean
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getBoolean
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -132,7 +166,7 @@ JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getB
     }
 }
 
-JNIEXPORT jbyte JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getByte
+JNIEXPORT jbyte JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getByte
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -142,7 +176,7 @@ JNIEXPORT jbyte JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getByte
     }
 }
 
-JNIEXPORT jchar JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getChar
+JNIEXPORT jchar JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getChar
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -152,7 +186,7 @@ JNIEXPORT jchar JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getChar
     }
 }
 
-JNIEXPORT jdouble JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getDouble
+JNIEXPORT jdouble JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getDouble
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -162,7 +196,7 @@ JNIEXPORT jdouble JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getDo
     }
 }
 
-JNIEXPORT jfloat JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getFloat
+JNIEXPORT jfloat JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getFloat
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -172,7 +206,7 @@ JNIEXPORT jfloat JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getFlo
     }
 }
 
-JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getInt
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getInt
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -182,7 +216,7 @@ JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getInt
     }
 }
 
-JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getLong
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getLong
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -192,7 +226,7 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getLong
     }
 }
 
-JNIEXPORT jshort JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getShort
+JNIEXPORT jshort JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getShort
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -202,7 +236,7 @@ JNIEXPORT jshort JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getSho
     }
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getObject
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getObject
         (JNIEnv *env, jclass clazz, jobject field, jobject instance) {
     jfieldID id = env->FromReflectedField(field);
     if (instance == nullptr) {
@@ -212,14 +246,18 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getOb
     }
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeVoid
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeVoid
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
+    if (env->GetArrayLength(params) == 0) {
+        if (instance == nullptr) {
+            env->CallStaticVoidMethod(clazz, id);
+        } else {
+            env->CallVoidMethod(instance, id);
+        }
         return;
     }
-    env->DeleteLocalRef(method);
+    jvalue *args = TransformParams(env, params);
     if (instance == nullptr) {
         env->CallStaticVoidMethodA(clazz, id, args);
     } else {
@@ -228,282 +266,138 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeVo
     free(args);
 }
 
-JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeBoolean
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeBoolean
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jboolean obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticBooleanMethodA(clazz, id, args);
-    } else {
-        obj = env->CallBooleanMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jboolean, Boolean)
 }
 
-JNIEXPORT jbyte JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeByte
+JNIEXPORT jbyte JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeByte
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jbyte obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticByteMethodA(clazz, id, args);
-    } else {
-        obj = env->CallByteMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jbyte, Byte)
 }
 
-JNIEXPORT jchar JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeChar
+JNIEXPORT jchar JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeChar
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jchar obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticCharMethodA(clazz, id, args);
-    } else {
-        obj = env->CallCharMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jchar, Char)
 }
 
-JNIEXPORT jdouble JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeDouble
+JNIEXPORT jdouble JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeDouble
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jdouble obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticDoubleMethodA(clazz, id, args);
-    } else {
-        obj = env->CallDoubleMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jdouble, Double)
 }
 
-JNIEXPORT jfloat JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeFloat
+JNIEXPORT jfloat JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeFloat
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jfloat obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticFloatMethodA(clazz, id, args);
-    } else {
-        obj = env->CallFloatMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jfloat, Float)
 }
 
-JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeInt
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeInt
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jint obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticIntMethodA(clazz, id, args);
-    } else {
-        obj = env->CallIntMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jint, Int)
 }
 
-JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeLong
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeLong
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jlong obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticLongMethodA(clazz, id, args);
-    } else {
-        obj = env->CallLongMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jlong, Long)
 }
 
-JNIEXPORT jshort JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeShort
+JNIEXPORT jshort JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeShort
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) {
-        return 0;
-    }
-    env->DeleteLocalRef(method);
-    jshort obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticShortMethodA(clazz, id, args);
-    } else {
-        obj = env->CallShortMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jshort, Short)
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeObject
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeObject
         (JNIEnv *env, jclass clazz, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    env->DeleteLocalRef(method);
-    if (args == nullptr) return nullptr;
-    jobject obj;
-    if (instance == nullptr) {
-        obj = env->CallStaticObjectMethodA(clazz, id, args);
-    } else {
-        obj = env->CallObjectMethodA(instance, id, args);
-    }
-    free(args);
-    return obj;
+    CALL_METHOD(jobject, Object)
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualVoid
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualVoid
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
+    jvalue *args = TransformParams(env, params);
     if (args == nullptr) return;
     env->CallNonvirtualVoidMethodA(instance, GetDeclaringClass(env, method), id, args);
     env->DeleteLocalRef(method);
     free(args);
 }
 
-JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualBoolean
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualBoolean
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jboolean obj = env->CallNonvirtualBooleanMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jboolean, Boolean)
 }
 
-JNIEXPORT jbyte JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualByte
+JNIEXPORT jbyte JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualByte
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jbyte obj = env->CallNonvirtualByteMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jbyte, Byte)
 }
 
-JNIEXPORT jchar JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualChar
+JNIEXPORT jchar JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualChar
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jchar obj = env->CallNonvirtualCharMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jchar, Char)
 }
 
-JNIEXPORT jdouble JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualDouble
+JNIEXPORT jdouble JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualDouble
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jdouble obj = env->CallNonvirtualDoubleMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jdouble, Double)
 }
 
-JNIEXPORT jfloat JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualFloat
+JNIEXPORT jfloat JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualFloat
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jfloat obj = env->CallNonvirtualFloatMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jfloat, Float)
 }
 
-JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualInt
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualInt
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jint obj = env->CallNonvirtualIntMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jint, Int)
 }
 
-JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualLong
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualLong
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jlong obj = env->CallNonvirtualLongMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jlong, Long)
 }
 
-JNIEXPORT jshort JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualShort
+JNIEXPORT jshort JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualShort
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return 0;
-    jshort obj = env->CallNonvirtualShortMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jshort, Short)
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_invokeNonvirtualObject
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_invokeNonvirtualObject
         (JNIEnv *env, jclass, jobject method, jobject instance, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(method);
-    jvalue *args = TransformParamsToArgs(env, params, method);
-    if (args == nullptr) return nullptr;
-    jobject obj = env->CallNonvirtualObjectMethodA(instance, GetDeclaringClass(env, method), id, args);
-    env->DeleteLocalRef(method);
-    free(args);
-    return obj;
+    jclass klass = GetDeclaringClass(env, method);
+    CALL_NONVIRTUAL_METHOD(jobject, Object)
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_newInstance
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_newInstance
         (JNIEnv *env, jclass, jobject ctor, jobjectArray params) {
     jmethodID id = env->FromReflectedMethod(ctor);
-    jvalue *args = TransformParamsToArgs(env, params, ctor);
-    if (args == nullptr) return nullptr;
+    jvalue *args = TransformParams(env, params);
     jclass cl = GetDeclaringClass(env, ctor);
-    env->DeleteLocalRef(ctor);
     if (cl == nullptr) {
         return nullptr;
     }
@@ -512,7 +406,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_newIn
     return obj;
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getStaticMethod
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getStaticMethod
         (JNIEnv *env, jclass, jclass clazz, jstring name, jstring signature) {
     const char * n = env->GetStringUTFChars(name, nullptr);
     const char * s = env->GetStringUTFChars(signature, nullptr);
@@ -527,7 +421,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getSt
     }
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getNonstaticMethod
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getNonstaticMethod
         (JNIEnv *env, jclass, jclass clazz, jstring name, jstring signature) {
     const char * n = env->GetStringUTFChars(name, nullptr);
     const char * s = env->GetStringUTFChars(signature, nullptr);
@@ -542,7 +436,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getNo
     }
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getStaticField
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getStaticField
         (JNIEnv *env, jclass, jclass clazz, jstring name, jstring signature) {
     const char * n = env->GetStringUTFChars(name, nullptr);
     const char * s = env->GetStringUTFChars(signature, nullptr);
@@ -557,7 +451,7 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getSt
     }
 }
 
-JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getNonstaticField
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getNonstaticField
         (JNIEnv *env, jclass, jclass clazz, jstring name, jstring signature) {
     const char * n = env->GetStringUTFChars(name, nullptr);
     const char * s = env->GetStringUTFChars(signature, nullptr);
@@ -572,22 +466,22 @@ JNIEXPORT jobject JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getNo
     }
 }
 
-JNIEXPORT jclass JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_defineClass
+JNIEXPORT jclass JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_defineClass
         (JNIEnv *env, jclass, jstring name, jobject classLoader, jbyteArray buf, jint len) {
-    jbyte * byteBuf = env->GetByteArrayElements(buf, nullptr);
+    jbyte * byte_buf = env->GetByteArrayElements(buf, nullptr);
     const char * n = env->GetStringUTFChars(name, nullptr);
-    jclass clazz = env->DefineClass(n, classLoader, byteBuf, len);
+    jclass clazz = env->DefineClass(n, classLoader, byte_buf, len);
     env->ReleaseStringUTFChars(name, n);
-    env->ReleaseByteArrayElements(buf, byteBuf, 0);
+    env->ReleaseByteArrayElements(buf, byte_buf, 0);
     return clazz;
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_forceGarbageCollection
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_forceGarbageCollection
         (JNIEnv *env, jclass) {
     GetJvmti(GetVM(env))->ForceGarbageCollection();
 }
 
-JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getLoadedClasses
+JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getLoadedClasses
         (JNIEnv *env, jclass) {
     jint count;
     jclass * classes;
@@ -599,7 +493,7 @@ JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_
     return arr;
 }
 
-JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getClassLoaderClasses
+JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getClassLoaderClasses
         (JNIEnv *env, jclass, jobject classLoader) {
     jint count;
     jclass * classes;
@@ -611,7 +505,7 @@ JNIEXPORT jobjectArray JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_
     return arr;
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_retransformClasses
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_retransformClasses
         (JNIEnv *env, jclass, jobjectArray arr) {
     jclass * clazz;
     int size = env->GetArrayLength(arr);
@@ -622,33 +516,33 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_retransf
     GetJvmti(GetVM(env))->RetransformClasses(size, clazz);
 }
 
-JNIEXPORT jlong JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getObjectSize
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getObjectSize
         (JNIEnv *env, jclass, jobject o) {
     jlong size;
     GetJvmti(GetVM(env))->GetObjectSize(o, &size);
     return size;
 }
 
-JNIEXPORT jint JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_getObjectHashcode
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getObjectHashcode
         (JNIEnv *env, jclass, jobject o) {
     jint hashcode;
     GetJvmti(GetVM(env))->GetObjectHashCode(o, &hashcode);
     return hashcode;
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_registerClassLoadHook
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_registerClassLoadHook
         (JNIEnv *env, jclass, jobject obj) {
     AddClassLoadHook(env, obj);
 }
 
-JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_isModifiableClass
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_isModifiableClass
         (JNIEnv *env, jclass, jclass clazz) {
     jboolean isModifiable;
-    GetJvmti(GetVM(env))->IsModifiableClass(reinterpret_cast<jclass>(clazz), &isModifiable);
+    GetJvmti(GetVM(env))->IsModifiableClass(clazz, &isModifiable);
     return isModifiable;
 }
 
-JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_canRedefineClasses
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_canRedefineClasses
         (JNIEnv *env, jclass) {
     jvmtiCapabilities caps;
     int err = GetJvmti(GetVM(env))->GetCapabilities(&caps);
@@ -658,7 +552,7 @@ JNIEXPORT jboolean JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_canR
     return caps.can_redefine_classes;
 }
 
-JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_redefineClasses
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_redefineClasses
         (JNIEnv *env, jclass, jobjectArray array) {
     jint count = env->GetArrayLength(array);
     if (count == 0) return;
@@ -719,4 +613,202 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_native_1util_NativeAccessor_redefine
     }
     free(definitions);
 }
+
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getMethodId
+        (JNIEnv *env, jclass, jobject method) {
+    jmethodID m = env->FromReflectedMethod(method);
+    jclass klass = GetDeclaringClass(env, method);
+    auto *info = new MethodIDInfo {
+            m,
+            klass
+    };
+    return addr_to_java(info);
+}
+
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getMethodFromId
+        (JNIEnv *env, jclass, jlong method, jboolean is_static) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(method));
+    return env->ToReflectedMethod(info.klass, info.id, is_static);
+}
+
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callVoid
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    if (env->GetArrayLength(params) == 0) {
+        if (instance == nullptr) {
+            env->CallStaticVoidMethod(clazz, id);
+        } else {
+            env->CallVoidMethod(instance, id);
+        }
+        return;
+    }
+    jvalue *args = TransformParams(env, params);
+    if (instance == nullptr) {
+        env->CallStaticVoidMethodA(clazz, id, args);
+    } else {
+        env->CallVoidMethodA(instance, id, args);
+    }
+    free(args);
+}
+
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callBoolean
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jboolean, Boolean)
+}
+
+JNIEXPORT jbyte JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callByte
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jbyte, Byte)
+}
+
+JNIEXPORT jchar JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callChar
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jchar, Char)
+}
+
+JNIEXPORT jdouble JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callDouble
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jdouble, Double)
+}
+
+JNIEXPORT jfloat JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callFloat
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jfloat, Float)
+}
+
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callInt
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jint, Int)
+}
+
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callLong
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jlong, Long)
+}
+
+JNIEXPORT jshort JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callShort
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jshort, Short)
+}
+
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callObject
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    CALL_METHOD(jobject, Object)
+}
+
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualVoid
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    if (env->GetArrayLength(params) == 0) {
+        env->CallNonvirtualVoidMethod(instance, klass, id);
+        return;
+    }
+    jvalue *args = TransformParams(env, params);
+    env->CallNonvirtualVoidMethodA(instance, klass, id, args);
+    free(args);
+}
+
+JNIEXPORT jboolean JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualBoolean
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jboolean, Boolean)
+}
+
+JNIEXPORT jbyte JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualByte
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jbyte, Byte)
+}
+
+JNIEXPORT jchar JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualChar
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jchar, Char)
+}
+
+JNIEXPORT jdouble JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualDouble
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jdouble, Double)
+}
+
+JNIEXPORT jfloat JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualFloat
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jfloat, Float)
+}
+
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualInt
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jint, Int)
+}
+
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualLong
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jlong, Long)
+}
+
+JNIEXPORT jshort JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualShort
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jshort, Short)
+}
+
+JNIEXPORT jobject JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_callNonvirtualObject
+        (JNIEnv *env, jclass clazz, jlong methodID, jobject instance, jobjectArray params) {
+    MethodIDInfo info = *static_cast<MethodIDInfo *>(addr_from_java(methodID));
+    jmethodID id = info.id;
+    jclass klass = info.klass;
+    CALL_NONVIRTUAL_METHOD(jobject, Object)
+}
+
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_free
+        (JNIEnv *, jclass, jlong address) {
+    free(addr_from_java(address));
+}
+
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
+        (JNIEnv *, jclass, jlong address, jint value, jint size) {
+    return addr_to_java(memset(addr_from_java(address), value, size));
+}
+
 }

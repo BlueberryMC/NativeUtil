@@ -1,4 +1,4 @@
-package net.blueberrymc.native_util;
+package net.blueberrymc.nativeutil;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

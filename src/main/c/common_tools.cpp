@@ -8,7 +8,6 @@
 
 static jclass ClassAssertionError;
 static jclass ClassClass;
-static jclass ClassMethod;
 static jclass ClassThread;
 static jclass ClassIllegalArgumentException;
 static jclass ClassNoSuchElementException;
@@ -16,6 +15,7 @@ static jclass ClassNativeException;
 static jclass ClassClassFormatError;
 static jclass ClassClassCircularityError;
 static jclass ClassClassDefinition;
+static jclass ClassClassLoadHook;
 static jclass ClassBoolean;
 static jclass ClassByte;
 static jclass ClassCharacter;
@@ -24,8 +24,15 @@ static jclass ClassFloat;
 static jclass ClassInteger;
 static jclass ClassLong;
 static jclass ClassShort;
-static jclass ClassClassLoadHook;
 static jmethodID ClassClassLoadHook_transform;
+static jmethodID ClassBoolean_booleanValue;
+static jmethodID ClassByte_byteValue;
+static jmethodID ClassCharacter_charValue;
+static jmethodID ClassDouble_doubleValue;
+static jmethodID ClassFloat_floatValue;
+static jmethodID ClassInteger_intValue;
+static jmethodID ClassLong_longValue;
+static jmethodID ClassShort_shortValue;
 static jfieldID ClassClassDefinition_clazz;
 static jfieldID ClassClassDefinition_bytes;
 static JavaVM * javaVM;
@@ -118,14 +125,14 @@ static void InitTools(JNIEnv *env) {
     classLoadHooks = std::list<jobject>();
     ClassAssertionError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/AssertionError")));
     ClassClass = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Class")));
-    ClassMethod = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/reflect/Method")));
     ClassThread = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Thread")));
     ClassIllegalArgumentException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/IllegalArgumentException")));
     ClassNoSuchElementException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/NoSuchElementException")));
-    ClassNativeException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/NativeException")));
+    ClassNativeException = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/NativeException")));
     ClassClassFormatError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/ClassFormatError")));
     ClassClassCircularityError = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/ClassCircularityError")));
-    ClassClassDefinition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/ClassDefinition")));
+    ClassClassDefinition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/ClassDefinition")));
+    ClassClassLoadHook = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/nativeutil/ClassLoadHook")));
     ClassBoolean = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Boolean")));
     ClassByte = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Byte")));
     ClassCharacter = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Character")));
@@ -134,8 +141,15 @@ static void InitTools(JNIEnv *env) {
     ClassInteger = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Integer")));
     ClassLong = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Long")));
     ClassShort = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Short")));
-    ClassClassLoadHook = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("net/blueberrymc/native_util/ClassLoadHook")));
     ClassClassLoadHook_transform = env->GetMethodID(ClassClassLoadHook, "transform", "(Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class;Ljava/security/ProtectionDomain;[B)[B");
+    ClassBoolean_booleanValue = env->GetMethodID(ClassBoolean, "booleanValue", "()Z");
+    ClassByte_byteValue = env->GetMethodID(ClassByte, "byteValue", "()B");
+    ClassCharacter_charValue = env->GetMethodID(ClassCharacter, "charValue", "()C");
+    ClassDouble_doubleValue = env->GetMethodID(ClassDouble, "doubleValue", "()D");
+    ClassFloat_floatValue = env->GetMethodID(ClassFloat, "floatValue", "()F");
+    ClassInteger_intValue = env->GetMethodID(ClassInteger, "intValue", "()I");
+    ClassLong_longValue = env->GetMethodID(ClassLong, "longValue", "()J");
+    ClassShort_shortValue = env->GetMethodID(ClassShort, "shortValue", "()S");
     ClassClassDefinition_clazz = env->GetFieldID(ClassClassDefinition, "clazz", "Ljava/lang/Class;");
     ClassClassDefinition_bytes = env->GetFieldID(ClassClassDefinition, "bytes", "[B");
     InitCapabilities(javaVM);
@@ -143,7 +157,7 @@ static void InitTools(JNIEnv *env) {
 
 static void AddClassLoadHook(JNIEnv *env, jobject handler) {
     if (!env->IsInstanceOf(handler, ClassClassLoadHook)) {
-        env->ThrowNew(ClassIllegalArgumentException, "handler must implement net.blueberrymc.native_util.ClassLoadHook");
+        env->ThrowNew(ClassIllegalArgumentException, "handler must implement net.blueberrymc.nativeutil.ClassLoadHook");
         return;
     }
     jobject globalHandler = env->NewGlobalRef(handler);
@@ -159,179 +173,87 @@ static jclass GetDeclaringClass(JNIEnv *env, jobject obj) {
     return reinterpret_cast<jclass>(env->CallObjectMethod(obj, mid_getDeclClass));
 }
 
-static jobjectArray GetMethodParams(JNIEnv *env, jobject m) {
-    jmethodID mid_ptypes = env->GetMethodID(ClassMethod, "getParameterTypes", "()[Ljava/lang/Class;");
-    return reinterpret_cast<jobjectArray>(env->CallObjectMethod(m, mid_ptypes));
-}
-
-static jstring * ClassArrayToJStrings(JNIEnv *env, jobjectArray arr) {
-    jstring * chr;
-    int size = env->GetArrayLength(arr);
-    chr = static_cast<jstring *>(malloc(size * sizeof(_jstring * *)));
-    jmethodID mid_getName = env->GetMethodID(ClassClass, "getName", "()Ljava/lang/String;");
-    for (int i = 0; i < size; i++) {
-        jobject elem = env->GetObjectArrayElement(arr, i);
-        chr[i] = reinterpret_cast<jstring>(env->CallObjectMethod(elem, mid_getName));
-    }
-    return chr;
-}
-
 static void ThrowClass(JNIEnv *env, jclass clazz) {
     jmethodID mid = env->GetMethodID(clazz, "<init>", "()V");
     env->Throw(reinterpret_cast<jthrowable>(env->NewObject(clazz, mid)));
 }
 
-static const char * * JStringsToChars(JNIEnv *env, jstring *str, int size) {
-    const char ** chr;
-    chr = static_cast<const char **>(malloc(size * sizeof(const char *)));
-    for (int i = 0; i < size; i++) {
-        chr[i] = env->GetStringUTFChars(str[i], nullptr);
-    }
-    return chr;
-}
-
 static jboolean ToBoolean(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassBoolean, "booleanValue", "()Z");
-    return env->CallBooleanMethod(obj, id);
+    return env->CallBooleanMethod(obj, ClassBoolean_booleanValue);
 }
 
 static jbyte ToByte(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassByte, "byteValue", "()B");
-    return env->CallByteMethod(obj, id);
+    return env->CallByteMethod(obj, ClassByte_byteValue);
 }
 
-static jchar ToCharacter(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassCharacter, "charValue", "()C");
-    return env->CallCharMethod(obj, id);
+static jchar ToChar(JNIEnv *env, jobject obj) {
+    return env->CallCharMethod(obj, ClassCharacter_charValue);
 }
 
 static jdouble ToDouble(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassDouble, "doubleValue", "()D");
-    return env->CallDoubleMethod(obj, id);
+    return env->CallDoubleMethod(obj, ClassDouble_doubleValue);
 }
 
 static jfloat ToFloat(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassFloat, "floatValue", "()F");
-    return env->CallFloatMethod(obj, id);
+    return env->CallFloatMethod(obj, ClassFloat_floatValue);
 }
 
-static jint ToInteger(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassInteger, "intValue", "()I");
-    return env->CallIntMethod(obj, id);
+static jint ToInt(JNIEnv *env, jobject obj) {
+    return env->CallIntMethod(obj, ClassInteger_intValue);
 }
 
 static jlong ToLong(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassLong, "longValue", "()J");
-    return env->CallLongMethod(obj, id);
+    return env->CallLongMethod(obj, ClassLong_longValue);
 }
 
 static jshort ToShort(JNIEnv *env, jobject obj) {
-    jmethodID id = env->GetMethodID(ClassShort, "shortValue", "()S");
-    return env->CallShortMethod(obj, id);
+    return env->CallShortMethod(obj, ClassShort_shortValue);
 }
 
-static jvalue SetValue(JNIEnv *env, jvalue value, jobject obj, const std::string& ps) {
-    if (obj == nullptr) {
-        value.l = nullptr;
-        return value;
-    }
-    jmethodID mid_getName = env->GetMethodID(ClassClass, "getName", "()Ljava/lang/String;");
-    auto str = reinterpret_cast<jstring>(env->CallObjectMethod(env->GetObjectClass(obj), mid_getName));
-    auto name = env->GetStringUTFChars(str, nullptr);
-    auto s = std::string(name);
-    if (s == "java.lang.Boolean") {
-        if (ps == "boolean") {
-            value.z = ToBoolean(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassBoolean, "valueOf", "(Z)Ljava/lang/Boolean;");
-            value.l = env->CallStaticObjectMethod(ClassBoolean, mid, ToBoolean(env, obj));
-        }
-    } else if (s == "java.lang.Byte") {
-        if (ps == "byte") {
-            value.b = ToByte(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassByte, "valueOf", "(B)Ljava/lang/Byte;");
-            value.l = env->CallStaticObjectMethod(ClassByte, mid, ToByte(env, obj));
-        }
-    } else if (s == "java.lang.Character") {
-        if (ps == "char") {
-            value.c = ToCharacter(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassCharacter, "valueOf", "(C)Ljava/lang/Character;");
-            value.l = env->CallStaticObjectMethod(ClassCharacter, mid, ToCharacter(env, obj));
-        }
-    } else if (s == "java.lang.Double") {
-        if (ps == "double") {
-            value.d = ToDouble(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassDouble, "valueOf", "(D)Ljava/lang/Double;");
-            value.l = env->CallStaticObjectMethod(ClassDouble, mid, ToDouble(env, obj));
-        }
-    } else if (s == "java.lang.Float") {
-        if (ps == "float") {
-            value.f = ToFloat(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassFloat, "valueOf", "(F)Ljava/lang/Float;");
-            value.l = env->CallStaticObjectMethod(ClassFloat, mid, ToFloat(env, obj));
-        }
-    } else if (s == "java.lang.Integer") {
-        if (ps == "int") {
-            value.i = ToInteger(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassInteger, "valueOf", "(I)Ljava/lang/Integer;");
-            value.l = env->CallStaticObjectMethod(ClassInteger, mid, ToInteger(env, obj));
-        }
-    } else if (s == "java.lang.Long") {
-        if (ps == "long") {
-            value.j = ToLong(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassLong, "valueOf", "(J)Ljava/lang/Long;");
-            value.l = env->CallStaticObjectMethod(ClassLong, mid, ToLong(env, obj));
-        }
-    } else if (s == "java.lang.Short") {
-        if (ps == "short") {
-            value.s = ToShort(env, obj);
-        } else {
-            jmethodID mid = env->GetStaticMethodID(ClassShort, "valueOf", "(S)Ljava/lang/Short;");
-            value.l = env->CallStaticObjectMethod(ClassShort, mid, ToShort(env, obj));
-        }
-    } else {
-        value.l = obj;
-    }
-    env->ReleaseStringUTFChars(str, name);
-    env->DeleteLocalRef(obj);
-    return value;
-}
-
-static jvalue * TransformParamsToArgs(JNIEnv *env, jobjectArray params, jobject method) {
-    if (params == nullptr) return static_cast<jvalue *>(malloc(0));
-    int size = env->GetArrayLength(params);
-    jobjectArray arr = GetMethodParams(env, method);
-    if (size != env->GetArrayLength(arr)) {
-        env->ThrowNew(ClassIllegalArgumentException, "Argument count mismatch");
-        return nullptr;
-    }
-    jstring * str = ClassArrayToJStrings(env, arr);
-    jvalue * args;
-    const char * * chr = JStringsToChars(env, str, size);
-    args = static_cast<jvalue *>(malloc(size * sizeof(jvalue)));
-    env->EnsureLocalCapacity(size + 5);
-    for (int i = 0; i < size; i++) {
+static jvalue * TransformParams(JNIEnv *env, jobjectArray params) {
+    auto length = env->GetArrayLength(params);
+    auto *object_args = static_cast<jvalue *>(malloc(length * sizeof(jvalue)));
+    for (int i = 0; i < length; ++i) {
         jobject obj = env->GetObjectArrayElement(params, i);
-        args[i] = SetValue(env, args[i], obj, std::string(chr[i]));
+        if (env->IsInstanceOf(obj, ClassBoolean)) {
+            object_args[i].z = ToBoolean(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassByte)) {
+            object_args[i].b = ToByte(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassCharacter)) {
+            object_args[i].c = ToChar(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassDouble)) {
+            object_args[i].d = ToDouble(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassFloat)) {
+            object_args[i].f = ToFloat(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassInteger)) {
+            object_args[i].i = ToInt(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassLong)) {
+            object_args[i].j = ToLong(env, obj);
+        } else if (env->IsInstanceOf(obj, ClassShort)) {
+            object_args[i].s = ToShort(env, obj);
+        } else {
+            object_args[i].l = obj;
+        }
     }
-    for (int i = 0; i < size; i++) {
-        env->ReleaseStringUTFChars(str[i], chr[i]);
-    }
-    free(str);
-    free(chr);
-    env->DeleteLocalRef(arr);
-    env->DeleteLocalRef(params);
-    return args;
+    return object_args;
 }
+
 
 static std::string concat(const char * chars, int i) {
     return std::string(chars) + std::to_string(i);
+}
+
+static inline void* addr_from_java(jlong addr) {
+    // This assert fails in a variety of ways on 32-bit systems.
+    // It is impossible to predict whether native code that converts
+    // pointers to longs will sign-extend or zero-extend the addresses.
+    //assert(addr == (uintptr_t)addr, "must not be odd high bits");
+    return (void*)(uintptr_t)addr;
+}
+
+static inline jlong addr_to_java(void* p) {
+    //assert(p == (void*)(uintptr_t)p, "must not be odd high bits");
+    return (uintptr_t)p;
 }
 
 //}
