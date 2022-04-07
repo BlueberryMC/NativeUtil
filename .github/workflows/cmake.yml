@@ -50,6 +50,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Setup Java JDK
         uses: actions/setup-java@v3.1.0
         with:
