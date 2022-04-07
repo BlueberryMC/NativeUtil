@@ -1,9 +1,9 @@
 # NativeUtil
-Adds some methods that are possible in JNI, but not possible in Java (without using Unsafe etc.)
+Provides some methods that are possible in JNI, but not possible in Java (without using Unsafe etc.)
 
 ## Note
 - `callTypeMethod` and `invokeType` methods are 30x+ slower than reflection (68.447 ± 30.569 ns/op)
-- Methods with `java.lang.Void` parameter type is not supported and will crash the JVM when trying to invoke them
+- Method with `java.lang.Void` parameter type is not supported and will crash the JVM when trying to invoke them
 
 ## Repository
 
