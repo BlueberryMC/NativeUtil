@@ -6,7 +6,7 @@
 
     <groupId>net.blueberrymc</groupId>
     <artifactId>native-util</artifactId>
-    <version>2.1.2-SNAPSHOT</version>
+    <version>2.1.2</version>
     <packaging>jar</packaging>
 
     <name>native-util</name>
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
+            <version>24.1.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
