@@ -6,7 +6,35 @@
 
     <groupId>net.blueberrymc</groupId>
     <artifactId>native-util</artifactId>
-    <version>2.1.1-SNAPSHOT</version>
+    <version>2.1.1</version>
+    <packaging>jar</packaging>
+
+    <name>native-util</name>
+    <description>Provides some methods that are possible in JNI, but not possible in Java (without using Unsafe etc.)</description>
+    <url>https://github.com/BlueberryMC/NativeUtil</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/BlueberryMC/NativeUtil/blob/main/LICENSE</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>acrylic-style</name>
+            <email>me@acrylicstyle.xyz</email>
+            <organization>BlueberryMC</organization>
+            <organizationUrl>https://github.com/BlueberryMC/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/BlueberryMC/NativeUtil.git</connection>
+        <developerConnection>scm:git:ssh://github.com:BlueberryMC/NativeUtil.git</developerConnection>
+        <url>https://github.com/BlueberryMC/NativeUtil</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -27,6 +55,7 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -34,12 +63,66 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.2.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>${gpg.keyname}</keyname>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
+
     <distributionManagement>
         <repository>
             <id>blueberrymc-repo</id>
