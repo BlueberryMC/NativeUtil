@@ -1,4 +1,7 @@
 # NativeUtil
+
+[![](https://img.shields.io/maven-central/v/net.blueberrymc/native-util)](https://central.sonatype.com/artifact/net.blueberrymc/native-util)
+
 Provides some methods that are possible in JNI, but not possible in Java (without using Unsafe etc.)
 
 ## Note
