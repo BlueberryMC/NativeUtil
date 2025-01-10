@@ -32,17 +32,17 @@ jobs:
         shell: bash
         run: cmake --build . --config $BUILD_TYPE
       - if: ${{ matrix.os == 'macos-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: libnativeutil.dylib
           path: '${{runner.workspace}}/build/libnativeutil.dylib'
       - if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: libnativeutil.so
           path: '${{runner.workspace}}/build/libnativeutil.so'
       - if: ${{ matrix.os == 'windows-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: nativeutil.dll
           path: '${{runner.workspace}}/build/Release/nativeutil.dll'
