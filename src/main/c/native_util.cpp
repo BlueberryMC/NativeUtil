@@ -830,7 +830,7 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurren
     auto *threadinfo = new ThreadInfo {
             self
     };
-    return addr_to_java(self);
+    return addr_to_java(threadinfo);
 }
 
 JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jclass) {
