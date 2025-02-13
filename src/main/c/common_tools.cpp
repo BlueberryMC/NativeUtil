@@ -2,6 +2,7 @@
 #include <list>
 #include "jvmti.h"
 #include <string>
+#include <cstdint>
 
 //extern "C" {
 

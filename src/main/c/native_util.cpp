@@ -5,7 +5,7 @@
 #include <jni.h>
 #include <pthread.h>
 #include <sched.h>
-#include <stdio.h
+#include <stdio.h>
 #include <cstdint>
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
