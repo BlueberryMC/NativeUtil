@@ -20,7 +20,7 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
       - name: Configure CMake
@@ -32,17 +32,17 @@ jobs:
         shell: bash
         run: cmake --build . --config $BUILD_TYPE
       - if: ${{ matrix.os == 'macos-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: libnativeutil.dylib
           path: '${{runner.workspace}}/build/libnativeutil.dylib'
       - if: ${{ matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: libnativeutil.so
           path: '${{runner.workspace}}/build/libnativeutil.so'
       - if: ${{ matrix.os == 'windows-latest' }}
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: nativeutil.dll
           path: '${{runner.workspace}}/build/Release/nativeutil.dll'
@@ -57,9 +57,9 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: temurin
@@ -71,9 +71,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: temurin
