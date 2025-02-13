@@ -820,6 +820,12 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
     return addr_to_java(memset(addr_from_java(address), value, size));
 }
 
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadAddress(JNIEnv *, jclass) {
+    //jint tid = syscall(__NR_gettid);
+    pthread_t self = pthread_self();
+    return addr_to_java(self);
+}
+
 JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jclass) {
     //jint tid = syscall(__NR_gettid);
     jint tid = gettid();
@@ -827,13 +833,13 @@ JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrent
 }
 
 JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
-        (JNIEnv *, jclass, jint threadId, jint cpuId) {
+        (JNIEnv *, jclass, jlong threadId, jint cpuId) {
     #if !__APPLE__
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(cpuId, &cpuset);
 
-    pthread_t thread = (pthread_t) threadId;
+    pthread_t thread = (pthread_t) addr_from_java(threadId);
     int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (result != 0) {
         perror("pthread_setaffinity_np failed");

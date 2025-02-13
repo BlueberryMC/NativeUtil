@@ -553,11 +553,14 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_free
 JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
         (JNIEnv *, jclass, jlong, jint, jint);
 
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadAddress
+        (JNIEnv *, jclass);
+
 JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId
         (JNIEnv *, jclass);
 
 JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
-        (JNIEnv *, jclass, jint, jint);
+        (JNIEnv *, jclass, jlong, jint);
 
 #ifdef __cplusplus
 }

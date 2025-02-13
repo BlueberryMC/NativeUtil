@@ -1128,6 +1128,13 @@ public class NativeUtil {
     }
 
     /**
+     * Returns the native thread address of the current thread.
+     */
+    public static long getCurrentThreadAddress() {
+        return NativeAccessor.getCurrentThreadAddress();
+    }
+
+    /**
      * Returns the native thread id of the current thread.
      */
     public static int getCurrentThreadId() {
@@ -1136,10 +1143,10 @@ public class NativeUtil {
 
     /**
      * Sets the CPU affinity of the specified thread. This method only works on Linux.
-     * @param threadId the thread id
+     * @param thread the pthread_t address
      * @param cpuId the cpu id
      */
-    public static void setAffinity(int threadId, int cpuId) {
-        NativeAccessor.setAffinity(threadId, cpuId);
+    public static void setAffinity(long thread, int cpuId) {
+        NativeAccessor.setAffinity(thread, cpuId);
     }
 }
