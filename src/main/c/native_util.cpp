@@ -820,7 +820,7 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
     return addr_to_java(memset(addr_from_java(address), value, size));
 }
 
-JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jobject) {
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jclass) {
     //jint tid = syscall(__NR_gettid);
     jint tid = gettid();
     return tid;
