@@ -553,6 +553,9 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_free
 JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
         (JNIEnv *, jclass, jlong, jint, jint);
 
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
+        (JNIEnv *, jclass, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

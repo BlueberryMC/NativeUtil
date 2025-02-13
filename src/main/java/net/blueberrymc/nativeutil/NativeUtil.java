@@ -1126,4 +1126,13 @@ public class NativeUtil {
     public static long memset(long address, int value, int size) {
         return NativeAccessor.memset(address, value, size);
     }
+
+    /**
+     * Sets the CPU affinity of the specified thread. This method only works on Linux.
+     * @param threadId the thread id
+     * @param cpuId the cpu id
+     */
+    public static void setAffinity(int threadId, int cpuId) {
+        NativeAccessor.setAffinity(threadId, cpuId);
+    }
 }

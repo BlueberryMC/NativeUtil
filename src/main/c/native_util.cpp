@@ -2,6 +2,10 @@
 #include "common_tools.cpp"
 #include <cstring>
 #include <string>
+#include <jni.h>
+#include <pthread.h>
+#include <sched.h>
+#include <stdio.h>
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
@@ -810,6 +814,21 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_free
 JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
         (JNIEnv *, jclass, jlong address, jint value, jint size) {
     return addr_to_java(memset(addr_from_java(address), value, size));
+}
+
+JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
+        (JNIEnv *, jclass, jint threadId, jint cpuId) {
+    #if !__APPLE__
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(cpuId, &cpuset);
+
+    pthread_t thread = (pthread_t) threadId;
+    int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+    if (result != 0) {
+        perror("pthread_setaffinity_np failed");
+    }
+    #endif
 }
 
 }
