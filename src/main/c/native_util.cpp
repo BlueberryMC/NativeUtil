@@ -7,6 +7,9 @@
 #include <sched.h>
 #include <stdio.h>
 #include <cstdint>
+#include <unistd.h>
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
@@ -815,6 +818,12 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_free
 JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
         (JNIEnv *, jclass, jlong address, jint value, jint size) {
     return addr_to_java(memset(addr_from_java(address), value, size));
+}
+
+JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jobject) {
+    //jint tid = syscall(__NR_gettid);
+    jint tid = gettid();
+    return tid;
 }
 
 JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
