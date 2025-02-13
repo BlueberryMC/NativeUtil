@@ -45,6 +45,10 @@ struct MethodIDInfo {
   jclass klass;
 };
 
+struct ThreadInfo {
+  pthread_t thread;
+};
+
 extern "C" {
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void* reserved) {
     InitCapabilities(vm);
@@ -823,6 +827,9 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
 JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadAddress(JNIEnv *, jclass) {
     //jint tid = syscall(__NR_gettid);
     pthread_t self = pthread_self();
+    auto *threadinfo = new ThreadInfo {
+            self
+    };
     return addr_to_java(self);
 }
 
@@ -839,7 +846,8 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinit
     CPU_ZERO(&cpuset);
     CPU_SET(cpuId, &cpuset);
 
-    pthread_t thread = (pthread_t) addr_from_java(threadId);
+    ThreadInfo *info = static_cast<ThreadInfo *>(addr_from_java(threadId));
+    pthread_t thread = info->thread;
     int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (result != 0) {
         perror("pthread_setaffinity_np failed");
