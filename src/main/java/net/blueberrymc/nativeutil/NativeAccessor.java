@@ -183,10 +183,10 @@ public class NativeAccessor {
     @NativeType("void *")
     public static native long memset(@NativeType("void *") long address, @NativeType("int") int value, @NativeType("size_t") int size);
 
-    @NativeType("pthread_t *")
+    @NativeType("ThreadInfo *")
     public static native long getCurrentThreadAddress();
 
     public static native int getCurrentThreadId();
 
-    public static native void setAffinity(@NativeType("pthread_t *") long threadId, int cpuId);
+    public static native void setAffinity(@NativeType("ThreadInfo *") long threadId, int cpuId);
 }

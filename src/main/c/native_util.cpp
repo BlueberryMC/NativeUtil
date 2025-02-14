@@ -3,12 +3,16 @@
 #include <cstring>
 #include <string>
 #include <jni.h>
-#include <pthread.h>
 #include <sched.h>
 #include <stdio.h>
 #include <cstdint>
 #include <unistd.h>
 #include <sys/syscall.h>
+
+#ifdef __linux__
+#include <pthread.h>
+#endif
+
 #define gettid() syscall(SYS_gettid)
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -824,24 +828,27 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_memset
     return addr_to_java(memset(addr_from_java(address), value, size));
 }
 
-JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadAddress(JNIEnv *, jclass) {
-    //jint tid = syscall(__NR_gettid);
+JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadAddress(JNIEnv * env, jclass) {
+    #ifdef __linux__
     pthread_t self = pthread_self();
     auto *threadinfo = new ThreadInfo {
             self
     };
     return addr_to_java(threadinfo);
+    #else
+    env->ThrowNew(ClassNativeException, "This function only works on Linux");
+    return 0;
+    #endif
 }
 
 JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jclass) {
-    //jint tid = syscall(__NR_gettid);
     jint tid = gettid();
     return tid;
 }
 
 JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity
-        (JNIEnv *, jclass, jlong threadId, jint cpuId) {
-    #if !__APPLE__
+        (JNIEnv * env, jclass, jlong threadId, jint cpuId) {
+    #ifdef __linux__
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(cpuId, &cpuset);
@@ -852,6 +859,8 @@ JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinit
     if (result != 0) {
         perror("pthread_setaffinity_np failed");
     }
+    #else
+    env->ThrowNew(ClassNativeException, "This function only works on Linux");
     #endif
 }
 
