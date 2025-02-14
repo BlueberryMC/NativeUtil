@@ -3,7 +3,6 @@
 #include <cstring>
 #include <string>
 #include <jni.h>
-#include <sched.h>
 #include <stdio.h>
 #include <cstdint>
 #include <unistd.h>
@@ -11,6 +10,7 @@
 
 #ifdef __linux__
 #include <pthread.h>
+#include <sched.h>
 #endif
 
 #define gettid() syscall(SYS_gettid)
