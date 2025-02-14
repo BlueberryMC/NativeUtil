@@ -5,15 +5,12 @@
 #include <jni.h>
 #include <stdio.h>
 #include <cstdint>
-#include <unistd.h>
-#include <sys/syscall.h>
 
 #ifdef __linux__
 #include <pthread.h>
 #include <sched.h>
+#include <unistd.h>
 #endif
-
-#define gettid() syscall(SYS_gettid)
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
@@ -839,11 +836,6 @@ JNIEXPORT jlong JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurren
     env->ThrowNew(ClassNativeException, "This function only works on Linux");
     return 0;
     #endif
-}
-
-JNIEXPORT jint JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_getCurrentThreadId(JNIEnv *, jclass) {
-    jint tid = gettid();
-    return tid;
 }
 
 JNIEXPORT void JNICALL Java_net_blueberrymc_nativeutil_NativeAccessor_setAffinity

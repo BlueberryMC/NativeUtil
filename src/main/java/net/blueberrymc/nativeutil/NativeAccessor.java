@@ -186,7 +186,5 @@ public class NativeAccessor {
     @NativeType("ThreadInfo *")
     public static native long getCurrentThreadAddress();
 
-    public static native int getCurrentThreadId();
-
     public static native void setAffinity(@NativeType("ThreadInfo *") long threadId, int cpuId);
 }
