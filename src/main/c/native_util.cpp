@@ -10,6 +10,10 @@
 #include <pthread.h>
 #include <sched.h>
 #include <unistd.h>
+
+struct ThreadInfo {
+  pthread_t thread;
+};
 #endif
 
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -44,10 +48,6 @@
 struct MethodIDInfo {
   jmethodID id;
   jclass klass;
-};
-
-struct ThreadInfo {
-  pthread_t thread;
 };
 
 extern "C" {
